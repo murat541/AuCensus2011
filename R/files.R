@@ -68,8 +68,9 @@ read_abs <- function(profile, table, level, long=FALSE) {
     })
 
     if (long) {
+        # Convert from wide to long format.
         df <- df %>% tidyr::gather(measure, count, -region_id)
     }
 
-    invisible(df)
+    df
 }
