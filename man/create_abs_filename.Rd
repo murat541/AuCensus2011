@@ -24,6 +24,6 @@ MFC TODO: Describe exactly the file layout.
 For now, root_dir = place where DataPack zip files were uncompressed to.
 }
 \examples{
-create_abs_filename('BCP', 'B46', 'SSA')
+create_abs_filename('BCP', 'B46', 'AUS')
 }
 

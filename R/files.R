@@ -16,7 +16,7 @@
 #' @param level The level of the statistcal area: [AUS, CED, GCCSA, IARE, ILOC, IREG, LGA, POA, RA, SA1, SA2, SA3, SA4, SED, SLA, SOS, SOSR, SSC, STE, SUA, UCL]
 #' @return Returns the full path to the CSV file containing the nominated data.
 #' @examples
-#' create_abs_filename('BCP', 'B46', 'SSA')
+#' create_abs_filename('BCP', 'B46', 'AUS')
 #'
 create_abs_filename <- function(profile, table, level) {
     root_dir <- file.path(Sys.getenv('HOME'), "projectsdata/ABS2011/DataPacks/")
@@ -32,4 +32,37 @@ create_abs_filename <- function(profile, table, level) {
                                level, "/AUST/2011Census_", table, "_AUST_", level, "_long.csv")
     }
     abs_filename
+}
+
+
+#' Load an ABS DataPack file
+#'
+#' Given a profile, table & level, read the relevant ABS data into a data.frame
+#'
+#' Because of the size of the data, many tables are split over multiple files and numbered
+#' BxxA, BxxB, BxxC etc.  Once a DataPack has over 200 columns (excluding the region_id column),
+#' further columns are spilled into the next file.
+#' \code{read_abs} will automatically read these multiple files and
+#' merge the data into one really really wide data.frame
+#'
+#' @export
+#' @param profile The short code for the profile. e.g. 'BCP' for Basic Community Profile.
+#' @param table Table number excluding suffix. e.g. 'B01', 'B08'
+#' @param level The level of the statistcal area: [AUS, CED, GCCSA, IARE, ILOC, IREG, LGA, POA, RA, SA1, SA2, SA3, SA4, SED, SLA, SOS, SOSR, SSC, STE, SUA, UCL]
+#' @return Returns the full path to the CSV file containing the nominated data.
+#' @examples
+#' read_abs('BCP', 'B46', 'AUS')
+#'
+read_abs <- function(profile, table, level) {
+    # Find all the files that match the table name + wildcard
+    filename.glob <- create_abs_filename(profile, paste0(table, "*"), level)
+    filenames <- Sys.glob(filename.glob)
+    message(paste("Reading", length(filenames), "file(s) which make up Table", table))
+    # Read all those files
+    dfs <- lapply(filenames, readr::read_csv)
+    # inner_join them all by region_id
+    suppressMessages({
+        df <- Reduce(dplyr::inner_join, dfs)
+    })
+    invisible(df)
 }
