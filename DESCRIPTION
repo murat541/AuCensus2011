@@ -1,0 +1,10 @@
+Package: AuCensus2011
+Type: Package
+Title: Tools for parsing 2011 Census DataPacks from the ABS
+Version: 0.1
+Date: 2015-06-01
+Author: coolbutuseless
+Maintainer: coolbutuseless <coolbutuseless@gmail.com>
+Description: Tools for parsing 2011 Census DataPacks from the ABS.
+License: file LICENSE
+LazyData: TRUE
