@@ -10,6 +10,7 @@
 #' MFC TODO: Describe exactly the file layout.
 #' For now, root_dir = place where DataPack zip files were uncompressed to.
 #'
+#' @export
 #' @param profile The short code for the profile. e.g. 'BCP' for Basic Community Profile.
 #' @param table Table number including and suffix. e.g. 'B01', 'B08A'
 #' @param level The level of the statistcal area: [AUS, CED, GCCSA, IARE, ILOC, IREG, LGA, POA, RA, SA1, SA2, SA3, SA4, SED, SLA, SOS, SOSR, SSC, STE, SUA, UCL]
