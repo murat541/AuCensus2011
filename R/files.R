@@ -45,15 +45,17 @@ create_abs_filename <- function(profile, table, level) {
 #' \code{read_abs} will automatically read these multiple files and
 #' merge the data into one really really wide data.frame
 #'
+#' @importFrom dplyr "%>%"
 #' @export
 #' @param profile The short code for the profile. e.g. 'BCP' for Basic Community Profile.
 #' @param table Table number excluding suffix. e.g. 'B01', 'B08'
 #' @param level The level of the statistcal area: [AUS, CED, GCCSA, IARE, ILOC, IREG, LGA, POA, RA, SA1, SA2, SA3, SA4, SED, SLA, SOS, SOSR, SSC, STE, SUA, UCL]
-#' @return Returns the full path to the CSV file containing the nominated data.
+#' @param long If long==TRUE, then convert to long format, otherwise leave in wide format (default)
+#' @return Returns a data.frame of the data.
 #' @examples
 #' read_abs('BCP', 'B46', 'AUS')
 #'
-read_abs <- function(profile, table, level) {
+read_abs <- function(profile, table, level, long=FALSE) {
     # Find all the files that match the table name + wildcard
     filename.glob <- create_abs_filename(profile, paste0(table, "*"), level)
     filenames <- Sys.glob(filename.glob)
@@ -64,5 +66,10 @@ read_abs <- function(profile, table, level) {
     suppressMessages({
         df <- Reduce(dplyr::inner_join, dfs)
     })
+
+    if (long) {
+        df <- df %>% tidyr::gather(measure, count, -region_id)
+    }
+
     invisible(df)
 }

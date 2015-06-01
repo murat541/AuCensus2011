@@ -2,3 +2,4 @@
 
 export(create_abs_filename)
 export(read_abs)
+importFrom(dplyr,"%>%")

@@ -4,7 +4,7 @@
 \alias{read_abs}
 \title{Load an ABS DataPack file}
 \usage{
-read_abs(profile, table, level)
+read_abs(profile, table, level, long = FALSE)
 }
 \arguments{
 \item{profile}{The short code for the profile. e.g. 'BCP' for Basic Community Profile.}
@@ -12,9 +12,11 @@ read_abs(profile, table, level)
 \item{table}{Table number excluding suffix. e.g. 'B01', 'B08'}
 
 \item{level}{The level of the statistcal area: [AUS, CED, GCCSA, IARE, ILOC, IREG, LGA, POA, RA, SA1, SA2, SA3, SA4, SED, SLA, SOS, SOSR, SSC, STE, SUA, UCL]}
+
+\item{long}{If long==TRUE, then convert to long format, otherwise leave in wide format (default)}
 }
 \value{
-Returns the full path to the CSV file containing the nominated data.
+Returns a data.frame of the data.
 }
 \description{
 Given a profile, table & level, read the relevant ABS data into a data.frame
