@@ -69,7 +69,8 @@ read_abs <- function(profile, table, level, long=FALSE) {
 
     if (long) {
         # Convert from wide to long format.
-        df <- df %>% tidyr::gather(colname, count, -region_id)
+        df <- df %>% tidyr::gather(colname, count, -region_id) %>%
+            mutate(colname = as.character(colname))
     }
 
     df
