@@ -50,7 +50,7 @@ split_b01_columns <- function(column_names) {
     labels
 }
 
-split_b02_columns <- function(column_names) {
+split_b03_columns <- function(column_names) {
     column_names <- as.character(column_names)
     labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="")
 
@@ -82,5 +82,160 @@ split_b02_columns <- function(column_names) {
     labels
 }
 
-df <- read_abs('BCP', 'B03', 'AUS', long=TRUE)
+split_b04_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="", gender="")
+
+    patterns <- c(
+        '^Age_years_(.*)_(Males|Females|Persons)$',
+        '^(Total)_(Males|Females|Persons)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii]   <- match[,2]
+        labels$gender[ii]  <- match[,3]
+    }
+    labels
+}
+
+
+split_b05_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="", gender="")
+
+    patterns <- c(
+        '^(Males|Females|Persons)_(.*)_(Total|Widowed|Married|Divorced|Never_Married|Separated)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii]   <- match[,3]
+        labels$stat2[ii]   <- match[,4]
+        labels$gender[ii]  <- match[,2]
+    }
+    labels
+}
+
+split_b06_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="", gender="")
+
+    patterns <- c(
+        '^(Males|Females|Persons)_(.*)_(Total|Not_married|Married_in_a_registered_marriage|Married_in_a_de_facto_marriage)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii]   <- match[,3]
+        labels$stat2[ii]   <- match[,4]
+        labels$gender[ii]  <- match[,2]
+    }
+    labels
+}
+
+split_b07_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="", gender="")
+
+    patterns <- c(
+        '^(.*)_years_(.*)_(Males|Females|Persons)$',
+        '^(.*)_years_and_over_(.*)_(Males|Females|Persons)$',
+        '^(Total)_(.*)_(Males|Females|Persons)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii]   <- match[,2]
+        labels$stat2[ii]   <- match[,3]
+        labels$gender[ii]  <- match[,4]
+    }
+    labels
+}
+
+split_b08_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="", stat3="")
+
+    patterns <- c(
+        '^(.*)_(Mother_only|Father_only|Both_parents)_(born_in_Australia|born_overseas)$',
+        '^(.*)()_(Birthplace_not_stated|Total_Responses)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii]  <- match[,2]
+        labels$stat2[ii]  <- match[,3]
+        labels$stat3[ii]  <- match[,4]
+    }
+    labels
+}
+
+split_b09_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", gender="")
+
+    patterns <- c(
+        '^(.*)_(Males|Females|Persons|Person|Total)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii]  <- match[,2]
+        labels$gender[ii] <- match[,3]
+    }
+
+    # ABS FIX: some column names badly indicated for gender
+    labels$gender[labels$gender %in% c('Total', 'Person')] <- 'Persons'
+
+    labels
+}
+
+split_b10_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="")
+
+    patterns <- c(
+        '^(.*)_Year_of_arrival_(.*)$',
+        '^(.*)_(Total)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii] <- match[,2]
+        labels$stat2[ii] <- match[,3]
+    }
+
+    labels
+}
+
+split_b46_columns <- function(column_names) {
+    column_names <- as.character(unique(column_names))
+    labels <- dplyr::data_frame(colname=column_names, stat1="", stat2="", stat3="")
+
+    patterns <- c(
+        '^(.*)()_(Males|Females|Persons)$',
+        '^(One_method|Two_methods|Three_methods)_(.*)_(Males|Females|Persons)$'
+    )
+
+    for (pattern in patterns) {
+        ii <- str_detect(column_names, pattern)
+        match <- str_match(column_names[ii], pattern)
+        labels$stat1[ii] <- match[,2]
+        labels$stat2[ii] <- match[,3]
+        labels$stat3[ii] <- match[,4]
+    }
+
+    labels
+}
+
+
+df <- read_abs('BCP', 'B46', 'AUS', long=TRUE); column_names <- df$colname
 
