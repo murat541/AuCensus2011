@@ -70,29 +70,26 @@ b01config <- list(
     stats = c('stat1', 'stat2', 'gender')
 )
 
+place <- c('(Counted_at_home_on_Census_Night)',
+           'Visitor_from_(Same_Statistical_Area_Level_2_SA2)',
+           'Visitor_from_(.*?)',
+           'Visitor_from_Different_SA2_in_(.*?)',
+           'Visitor_from_(Different_SA2_in_Total)',
+           '(Total)')
+age <- make_age_pattern('Age')
+patterns <- make_patterns(place, age)
+
 b03config <- list(
     table    = 'B03',
-    patterns = c(
-        '^(Counted_at_home_on_Census_Night)_Age_(.*)_years',
-        '^(Counted_at_home_on_Census_Night)_(Total)$',
-
-        '^Visitor_from_(Same_Statistical_Area_Level_2_SA2)_Age_(.*)_years',
-        '^Visitor_from_(Same_Statistical_Area_Level_2_SA2)_(Total)',
-
-        '^Visitor_from_Different_SA2_in_(.*)_Age_(.*)_years',
-        '^Visitor_from_Different_SA2_in_(.*)_(Total)$',
-
-        '^Visitor_from_(Different_SA2)_in_Total_Age_(.*)_years',
-        '^Visitor_from_(Different_SA2)_in_Total_(Total)$',
-
-        '^Visitor_from_(Total_visitors)_Age_(.*)_years',
-        '^Visitor_from_(Total_visitors)_(Total)$',
-        '^(Total)_Age_(.*)_years',
-        '^(Total)_(Total)$'
-    ),
+    patterns = patterns,
     stats = c('stat1', 'stat2')
 )
 
+
+
+
+patterns <- make_patterns(make_age_pattern('Age'), gender_pattern)
+patterns
 b04config <- list(
     table    = 'B04',
     patterns = c(
