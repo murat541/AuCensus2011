@@ -1,4 +1,6 @@
 
+source("patterns.R")
+
 #=============================================================================
 # Table configuration information
 #=============================================================================
@@ -44,119 +46,122 @@ b03config <- list(
 #-----------------------------------------------------------------------------
 # B04
 #-----------------------------------------------------------------------------
-patterns <- make_patterns(make_age_pattern('Age'), gender_pattern)
-patterns
+age <- c('Age_years_(.*)',
+         '(Total)')
+patterns <- make_patterns(age, gender_pattern)
 b04config <- list(
     table    = 'B04',
-    patterns = c(
-        '^Age_years_(.*)_(Males|Females|Persons)$',
-        '^(Total)_(Males|Females|Persons)$'
-    ),
+    patterns = patterns,
     stats = c('stat1', 'gender')
 )
 
 
 #-----------------------------------------------------------------------------
-# B05
+# B05 Marriage status
 #-----------------------------------------------------------------------------
+marriage <- c('(Total|Widowed|Divorced|Married|Separated)',
+              '(Never_Married)')
+patterns <- make_patterns(gender_pattern, make_age_pattern(), marriage)
+
 b05config <- list(
     table    = 'B05',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_(Total|Widowed|Divorced|Never_Married|Married|Separated)$',
-        '^(Males|Females|Persons)_(.*)_(Never_Married)$'
-    ),
-    stats = c('stat1', 'stat2', 'gender')
+    patterns = patterns,
+    stats = c('gender', 'age', 'marriage_status')
 )
 
 
 #-----------------------------------------------------------------------------
-# B06
+# B06 Marriage type
 #-----------------------------------------------------------------------------
+marriage <- '(Total|Not_married|Married_in_a_registered_marriage|Married_in_a_de_facto_marriage)'
+patterns <- make_patterns(gender_pattern, make_age_pattern(), marriage)
 b06config <- list(
     table    = 'B06',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_(Total|Not_married|Married_in_a_registered_marriage|Married_in_a_de_facto_marriage)$'
-    ),
-    stats = c('gender', 'stat1', 'stat2')
+    patterns = patterns,
+    stats = c('gender', 'age', 'marriage_type')
 )
 
 
 #-----------------------------------------------------------------------------
-# B07
+# B07 Indigenous Status
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(make_age_pattern(), wild_pattern, gender_pattern)
 b07config <- list(
     table    = 'B07',
-    patterns = c(
-        '^(.*)_years_(.*)_(Males|Females|Persons)$',
-        '^(.*)_years_and_over_(.*)_(Males|Females|Persons)$',
-        '^(Total)_(.*)_(Males|Females|Persons)$'
-    ),
-    stats = c('stat1', 'stat2', 'gender')
+    patterns = patterns,
+    stats = c('age', 'indigenous_status', 'gender')
 )
 
 
 #-----------------------------------------------------------------------------
-# B08
+# B08 Nationality & Nationality of Parents
 #-----------------------------------------------------------------------------
+parents <- c('(Mother_only|Father_only|Both_parents)_(born_in_Australia|born_overseas)',
+             '()(Birthplace_not_stated|Total_Responses)')
+patterns <- make_patterns(wild_pattern, parents)
 b08config <- list(
     table    = 'B08',
-    patterns = c(
-        '^(.*)_(Mother_only|Father_only|Both_parents)_(born_in_Australia|born_overseas)$',
-        '^(.*)()_(Birthplace_not_stated|Total_Responses)$'
-    ),
-    stats = c('stat1', 'stat2', 'stat3')
+    patterns = patterns,
+    stats = c('nationality', 'parents', 'parents_origin')
 )
 
 
 #-----------------------------------------------------------------------------
-# B09
+# B09 Place of birth.  Table has some typos need 'extra_manipulation' to fix
 #-----------------------------------------------------------------------------
 b09config <- list(
     table    = 'B09',
     patterns = c(
         '^(.*)_(Males|Females|Persons|Person|Total)$'
     ),
-    stats = c('stat1', 'gender'),
+    stats = c('birthplace', 'gender'),
     extra_manipulation = . %>% mutate(gender = ifelse(gender %in% c('Total', 'Person'), 'Persons', gender))
 )
 
 
 #-----------------------------------------------------------------------------
-# B10
+# B10 Immigration
 #-----------------------------------------------------------------------------
+origin <- wild_pattern
+year_of_arrival <- c('Year_of_arrival_(.*)',
+                     '(Total)')
+patterns <- make_patterns(origin, year_of_arrival)
 b10config <- list(
     table    = 'B10',
-    patterns = c(
-        '^(.*)_Year_of_arrival_(.*)$',
-        '^(.*)_(Total)$'
-    ),
-    stats = c('stat1', 'stat2')
+    patterns = patterns,
+    stats = c('origin', 'arrival_year')
 )
 
 
 #-----------------------------------------------------------------------------
 # B11 English proficiency
 #-----------------------------------------------------------------------------
+year_of_arrival <- c('Year_of_arrival_(.*)',
+                     '(Total)')
+patterns <- make_patterns(gender_pattern, wild_pattern, year_of_arrival)
 b11config <- list(
     table    = 'B11',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*?)_Year_of_arrival_(.*)$'
-    ),
-    stats = c('gender', 'stat1', 'stat2')
+    patterns = patterns,
+    stats = c('gender', 'language', 'arrival_year')
 )
 
 
 #-----------------------------------------------------------------------------
 # B12 language with dependents
 #-----------------------------------------------------------------------------
+age      <- c('Dependent_children_aged_(.*)_years',
+              '(Total)_dependent_children')
+female   <- 'female_parent_(.*)'
+male     <- 'male_parent_(.*)'
+patterns <- make_patterns(age, female, male)
+
 b12config <- list(
     table    = 'B12',
-    patterns = c(
-        '^Dependent_children_aged_(.*)_years_female_parent_(.*)_male_parent_(.*)$',
-        '^(Total)_dependent_children_female_parent_(.*)_male_parent_(.*)$'
-    ),
+    patterns = patterns,
     stats = c('children_age', 'female_parent', 'male_parent')
 )
+
+
 
 
 #-----------------------------------------------------------------------------
@@ -172,6 +177,16 @@ b13config <- list(
     ),
     stats = c('language', 'gender')
 )
+
+
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+config <- b12config
+df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
+column_names <- df$colname
+df <- split_column_names(df$colname, config)
+df
+df %>% as.data.frame
 
 
 #-----------------------------------------------------------------------------
