@@ -30,6 +30,11 @@ split_column_names <- function(column_names, config) {
         ii    <- str_detect(column_names, pattern)
         # Split on those that match the pattern
         match <- str_match(column_names[ii], pattern)
+        if (nrow(match)==0) {
+            warning("Failed")
+            print(pattern)
+            stop("Failed")
+        }
         # assign the vars into the labels df
         mcount <- 2
         for (stat in config$stats) {
@@ -287,39 +292,141 @@ b22config <- list(
 )
 
 # household makeup
-
-age_range <- c('(.*)_years', '(.*_years_and_over)', '(Total)')
-gender    <- '(Males|Females|Persons)'
-
-patterns <- expand.grid(v1=gender, v2=age_range)
-patterns <- with(patterns, paste(v1, v2, sep="_"))
-patterns
+age_range <- make_age_pattern('Age')
+patterns <- make_patterns(gender_pattern, wild_pattern, age_range)
 
 b23config <- list(
     table    = 'B23',
-    patterns = c(
-        '^_(.*)_Age_(.*)_years',
-        '^(Males|Females|Persons)_(.*)_Age_(.*_years_and_over)',
-        '^(Males|Females|Persons)_(.*?)_(Total)$'
-    ),
+    patterns = patterns,
     stats = c('gender', 'status', 'age')
 )
 
 # children
-age_range <- c('Age_group_of_parent_(.*)_years', 'Age_group_of_parent_(.*_years_and_over)', '(Total)')
+age_range <- make_age_pattern('Age_group_of_parent')
 Nchildren <- c('Number_of_children_ever_born_(.*)', '(Total)')
-
-patterns <- expand.grid(v1=age_range, v2=Nchildren)
-patterns <- with(patterns, paste(v1, v2, sep="_"))
-patterns
-
+patterns <- make_patterns(age_range, Nchildren)
 b24config <- list(
     table    = 'B24',
     patterns = patterns,
     stats = c('parent_age', 'children')
 )
 
-config <- b24config
+
+# Family type
+famtype <- '(Couple_family|One_parent_family|Total)'
+group <- '(Families|Persons)'
+patterns <- make_patterns(famtype, wild_pattern, group)
+patterns
+
+b25config <- list(
+    table    = 'B25',
+    patterns = patterns,
+    stats = c('stat1', 'stat2', 'group')
+)
+
+
+# B26 Household incomine by family type
+famtype <- c('(Couple_family_with_children|Other_family|One_parent_family|Total|Couple_family_with_no_children)')
+patterns <- make_patterns(wild_pattern, famtype)
+patterns
+
+b26config <- list(
+    table    = 'B26',
+    patterns = patterns,
+    stats = c('income', 'family')
+)
+
+# B27 Family type
+p1 <- c('(.*)_with_(.*)', '(Total)()')
+patterns <- make_patterns(p1, 'Families')
+patterns
+
+b27config <- list(
+    table    = 'B27',
+    patterns = patterns,
+    stats = c('family', 'children')
+)
+
+# family incomes age
+households <- '(Family_households|Total|Non_family_households)'
+patterns <- make_patterns(wild_pattern, households)
+patterns
+
+b28config <- list(
+    table    = 'B28',
+    patterns = patterns,
+    stats = c('income', 'household')
+)
+
+# motor vehicles per dwelling
+vehicles <- c('(Total)', 'Number_of_motor_vehicles_per_dwelling_(.*)', 'Number_of_motor_vehicles_(not_stated)')
+patterns <- make_patterns(vehicles, 'Dwellings')
+patterns
+
+b29config <- list(
+    table    = 'B29',
+    patterns = patterns,
+    stats = c('cars')
+)
+
+# usual residency
+households <- c('(Family|Non_family)_households', '(Total)')
+number <- c('Number_of_Persons_usually_resident_(.*)', '(Total)')
+patterns <- make_patterns(number, households)
+patterns
+
+b30config <- list(
+    table    = 'B30',
+    patterns = patterns,
+    stats = c('number', 'household')
+)
+
+# b31 house type
+dwellperson <- '(Dwellings|Persons)'
+occupied <- '(Total|Occupied|Unoccupied)_private_dwellings'
+patterns <- c(make_patterns(occupied, wild, dwellperson),
+              make_patterns(occupied,       paste0('()', dwellperson))) # MFC TODO need better skipped pattern
+patterns
+
+b31config <- list(
+    table    = 'B31',
+    patterns = patterns,
+    stats = c('occupied', 'stat1', 'dp')
+)
+
+# housing tenure
+tenure <- c('(.*)', '(.*)_Dwelling_structure')
+structure <- '(Total|Separate_house|Semi_detached_row_or_terrace_house_townhouse_etc|Flat_unit_or_apartment|Other_dwelling|not_stated)'
+patterns <- make_patterns(tenure, structure)
+patterns
+
+b32config <- list(
+    table    = 'B32',
+    patterns = patterns,
+    stats = c('tenure', 'structure')
+)
+
+
+# B33 mortgage
+mortgage <- c('(.*)', '(.*)_Dwelling_structure')
+structure <- '(Total|Separate_house|Semi_detached_row_or_terrace_house_townhouse_etc|Flat_unit_or_apartment|Other_dwelling|Not_stated)'
+patterns <- make_patterns(mortgage, structure)
+patterns
+b33config <- list(
+    table    = 'B33',
+    patterns = patterns,
+    stats = c('mortgage', 'structure')
+)
+
+# B34
+b34config <- list(
+    table    = 'B34',
+    patterns = patterns,
+    stats = c('mortgage', 'structure')
+)
+
+
+config <- b34config
 df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
 column_names <- df$colname
 df <- split_column_names(df$colname, config)
