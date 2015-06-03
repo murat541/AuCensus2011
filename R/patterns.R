@@ -5,8 +5,11 @@
 
 make_age_pattern <- function(prefix="") {
     age_range_basic <- c('(.*)_years', '(.*_years_and_over)', '(Total)')
-    if (prefix != "")
+    if (prefix != "") {
         age_range <- c(paste(prefix, age_range_basic[1:2], sep='_'), '(Total)')
+    } else {
+        age_range <- age_range_basic
+    }
     age_range
 }
 
