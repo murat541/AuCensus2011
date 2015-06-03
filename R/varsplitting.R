@@ -160,8 +160,168 @@ b46config <- list(
     stats = c('stat1', 'stat2', 'gender')
 )
 
-if (FALSE) {
-    df <- read_abs('BCP', 'B10', 'AUS', long=TRUE); column_names <- df$colname
-    df <- split_column_names(df$colname, b10config)
-    df
-}
+# English proficiency
+b11config <- list(
+    table    = 'B11',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*?)_Year_of_arrival_(.*)$'
+    ),
+    stats = c('gender', 'stat1', 'stat2')
+)
+
+# language with dependents
+b12config <- list(
+    table    = 'B12',
+    patterns = c(
+        '^Dependent_children_aged_(.*)_years_female_parent_(.*)_male_parent_(.*)$',
+        '^(Total)_dependent_children_female_parent_(.*)_male_parent_(.*)$'
+    ),
+    stats = c('children_age', 'female_parent', 'male_parent')
+)
+
+# language spoken at home
+b13config <- list(
+    table    = 'B13',
+    patterns = c(
+        '^Speaks_(English_only)_(Males|Females|Persons)$',
+        '^Speaks_other_language_(.*)_(Males|Females|Persons)$',
+        '^Language_spoken_at_home_(not_stated)_(Males|Females|Persons)$',
+        '^(Total)_(Males|Females|Persons)$'
+    ),
+    stats = c('language', 'gender')
+)
+
+# religion
+b14config <- list(
+    table    = 'B14',
+    patterns = c(
+        '^(.*)_(Males|Females|Persons)$'
+    ),
+    stats = c('religion', 'gender')
+)
+
+# Educational Institution. MFC TODO not finished.
+b15config <- list(
+    table    = 'B15',
+    patterns = c(
+        '^(.*)()()()_(Males|Females|Persons)$',
+        # '^(.*)_(Government|Catholic|Non_Government|Total)()_(Total)_(Males|Females|Persons)$'
+        '^(.*)()_(Full_Part_time|Full_time)_student_Aged_(.*)_(Males|Females|Persons)$'
+    ),
+    stats = c('inst1', 'inst2', 'student_type', 'age', 'gender')
+)
+
+# highest school level
+b16config <- list(
+    table    = 'B16',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*)_Age_(.*)_years',
+        '^(Males|Females|Persons)_(.*)_(Total)$'
+    ),
+    stats = c('gender', 'school', 'age')
+)
+
+# Personal income
+b17config <- list(
+    table    = 'B17',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*)_Age_(.*)_years',
+        '^(Males|Females|Persons)_(.*)_(Total)'
+    ),
+    stats = c('gender', 'income', 'age')
+)
+
+# persons needing assistance
+b18config <- list(
+    table    = 'B18',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*)_years_(.*)',
+        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
+        '^(Males|Females|Persons)_(Total)_(.*)'
+    ),
+    stats = c('gender', 'age', 'assistance')
+)
+
+# volunteering
+b19config <- list(
+    table    = 'B19',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*)_years_(.*)',
+        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
+        '^(Males|Females|Persons)_(Total)_(.*)'
+    ),
+    stats = c('gender', 'age', 'volunteer')
+)
+
+# housework
+b20config <- list(
+    table    = 'B20',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*)_years_(.*)',
+        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
+        '^(Males|Females|Persons)_(Total)_(.*)'
+    ),
+    stats = c('gender', 'age', 'housework')
+)
+
+# providing assistance
+b21config <- list(
+    table    = 'B21',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*)_years_(.*)',
+        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
+        '^(Males|Females|Persons)_(Total)_(.*)'
+    ),
+    stats = c('gender', 'age', 'assistance')
+)
+
+# childcare
+b22config <- list(
+    table    = 'B22',
+    patterns = c(
+        '^(Males|Females|Persons)_(.*)_years_(.*)',
+        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
+        '^(Males|Females|Persons)_(Total)_(.*)'
+    ),
+    stats = c('gender', 'age', 'childcare')
+)
+
+# household makeup
+
+age_range <- c('(.*)_years', '(.*_years_and_over)', '(Total)')
+gender    <- '(Males|Females|Persons)'
+
+patterns <- expand.grid(v1=gender, v2=age_range)
+patterns <- with(patterns, paste(v1, v2, sep="_"))
+patterns
+
+b23config <- list(
+    table    = 'B23',
+    patterns = c(
+        '^_(.*)_Age_(.*)_years',
+        '^(Males|Females|Persons)_(.*)_Age_(.*_years_and_over)',
+        '^(Males|Females|Persons)_(.*?)_(Total)$'
+    ),
+    stats = c('gender', 'status', 'age')
+)
+
+# children
+age_range <- c('Age_group_of_parent_(.*)_years', 'Age_group_of_parent_(.*_years_and_over)', '(Total)')
+Nchildren <- c('Number_of_children_ever_born_(.*)', '(Total)')
+
+patterns <- expand.grid(v1=age_range, v2=Nchildren)
+patterns <- with(patterns, paste(v1, v2, sep="_"))
+patterns
+
+b24config <- list(
+    table    = 'B24',
+    patterns = patterns,
+    stats = c('parent_age', 'children')
+)
+
+config <- b24config
+df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
+column_names <- df$colname
+df <- split_column_names(df$colname, config)
+df
+df %>% as.data.frame
