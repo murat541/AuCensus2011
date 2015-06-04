@@ -1,5 +1,5 @@
 
-source("patterns.R")
+source("pattern-helper.R")  # helper code for building regex patterns
 
 #=============================================================================
 # Table configuration information

@@ -1,4 +1,7 @@
 
+
+source('make-tableconfig.R')
+
 #=============================================================================
 # Variable Splitting
 # - splitting variables from named columns.
@@ -53,13 +56,12 @@ split_column_names <- function(column_names, config) {
 #-----------------------------------------------------------------------------
 # Configs
 #-----------------------------------------------------------------------------
-source('tableconfigs.R')
 
-
-config <- b34config
-df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
-column_names <- df$colname
-df <- split_column_names(df$colname, config)
-df
-df %>% as.data.frame
-
+if (FALSE) {
+    config <- b34config
+    df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
+    column_names <- df$colname
+    df <- split_column_names(df$colname, config)
+    df
+    df %>% as.data.frame
+}
