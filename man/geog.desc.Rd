@@ -18,7 +18,7 @@ Based on Australian Bureau of Statistics data \url{http://www.abs.gov.au/website
 geog.desc
 }
 \description{
-ABS Australian Census 2011 Geographical Descriptors
+ABS Australian Census 2011: Geographical Descriptors
 }
 \details{
 Metadata concerning the description of the different statistical regions for the 2011 Australian Census Data.

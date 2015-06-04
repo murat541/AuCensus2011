@@ -13,4 +13,6 @@ Depends:
 Imports:
     readr,
     dplyr,
-    tidyr
+    tidyr,
+    roxygen2,
+    whisker
