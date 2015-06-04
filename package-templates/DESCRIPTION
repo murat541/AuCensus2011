@@ -1,6 +1,6 @@
 Package: AuCensus2011.{{level}}
 Type: Package
-Title: 2011 Census data for {{level}} statistical regions (data from ABS).
+Title: 2011 Census data for {{level}} statistical regions (data from ABS)
 Version: 0.1
 Date: 2015-06-04
 Author: coolbutuseless@gmail.com

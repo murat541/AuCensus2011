@@ -13,12 +13,11 @@
 # Output:
 #    - complete package in "../region_packages/AuCensus2011.STE"
 #=============================================================================
-
-library(whisker)
+library(dplyr)
 
 render_template <- function(data, template_file, output_file) {
     template <- readLines(template_file)
-    writeLines(whisker.render(template, data), output_file)
+    writeLines(whisker::whisker.render(template, data), output_file)
 }
 
 
@@ -33,7 +32,7 @@ package_path <- paste("../AuCensus2011", this_level, sep=".")
 #-----------------------------------------------------------------------------
 # Copy across the package skeleton
 #-----------------------------------------------------------------------------
-system(paste("cp -R 'package-skeleton'", package_path))
+system(paste("cp -R 'package-skeleton/'", package_path))
 
 #-----------------------------------------------------------------------------
 # Render templated version of the DESCRIPTION file.
@@ -80,6 +79,6 @@ for (config in tableconfig) {
 }
 
 # Generate the actual man pages from the roxygen comments in the R files
-roxygenise(package_path)
+roxygen2::roxygenise(package_path)
 
 
