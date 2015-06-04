@@ -167,26 +167,16 @@ b12config <- list(
 #-----------------------------------------------------------------------------
 # B13 language spoken at home
 #-----------------------------------------------------------------------------
+language <- c('Speaks_(English_only)',
+              'Speaks_other_language_(.*)',
+              'Language_spoken_at_home_(not_stated)',
+              '(Total)')
+patterns <- make_patterns(language, gender_pattern)
 b13config <- list(
     table    = 'B13',
-    patterns = c(
-        '^Speaks_(English_only)_(Males|Females|Persons)$',
-        '^Speaks_other_language_(.*)_(Males|Females|Persons)$',
-        '^Language_spoken_at_home_(not_stated)_(Males|Females|Persons)$',
-        '^(Total)_(Males|Females|Persons)$'
-    ),
+    patterns = patterns,
     stats = c('language', 'gender')
 )
-
-
-#-----------------------------------------------------------------------------
-#-----------------------------------------------------------------------------
-config <- b12config
-df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
-column_names <- df$colname
-df <- split_column_names(df$colname, config)
-df
-df %>% as.data.frame
 
 
 #-----------------------------------------------------------------------------
@@ -202,18 +192,43 @@ b14config <- list(
 
 
 #-----------------------------------------------------------------------------
-# B15 Educational Institution. MFC TODO not finished
+# B15 Educational Institution.
 #-----------------------------------------------------------------------------
+pre_school <- '(.*)()()()'
+infants    <- 'Infants_(Primary)_(.*)()()'
+secondary  <- '(Secondary)_(.*)()()'
+tertiary   <- '(.*)()_(Part_time|Full_Part_time|Full_time)_student'
+
+age        <- c('Aged_(15_24)_years',
+                'Aged_(25_years_and_over)')
+
+tertiary2 <- '(.*)()_Full_Part_time_(student_status_not_stated)()'
+
+tertiary3 <- '(.*)()_(Total)()'
+tertiary4  <- '(.*)()_(Part_time|Full_Part_time|Full_time)()_student'
+
+patterns <- c(make_patterns(pre_school, gender_pattern),
+              make_patterns(tertiary3 , gender_pattern),
+              make_patterns(infants   , gender_pattern),
+              make_patterns(secondary , gender_pattern),
+              make_patterns(tertiary, age, gender_pattern),
+              make_patterns(tertiary2 , gender_pattern),
+              make_patterns(tertiary4 , gender_pattern))
+
 b15config <- list(
     table    = 'B15',
-    patterns = c(
-        '^(.*)()()()_(Males|Females|Persons)$',
-        # '^(.*)_(Government|Catholic|Non_Government|Total)()_(Total)_(Males|Females|Persons)$'
-        '^(.*)()_(Full_Part_time|Full_time)_student_Aged_(.*)_(Males|Females|Persons)$'
-    ),
+    patterns = patterns,
     stats = c('inst1', 'inst2', 'student_type', 'age', 'gender')
 )
 
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+config <- b15config
+df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
+column_names <- df$colname
+df <- split_column_names(df$colname, config)
+df
+df %>% as.data.frame
 
 #-----------------------------------------------------------------------------
 # B16 highest school level
