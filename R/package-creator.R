@@ -24,38 +24,62 @@ render_template <- function(data, template_file, output_file) {
 
 load("data/tableconfig.rda")
 load("data/geog.desc.rda")
+
+
+this_level   <- 'STE'
 package_path <- paste("../AuCensus2011", this_level, sep=".")
 
-this_level <- 'STE'
 
+#-----------------------------------------------------------------------------
+# Copy across the package skeleton
+#-----------------------------------------------------------------------------
+system(paste("cp -R 'package-skeleton'", package_path))
+
+#-----------------------------------------------------------------------------
+# Render templated version of the DESCRIPTION file.
+#-----------------------------------------------------------------------------
+render_template(data          =  list(level = this_level),
+                template_file = "package-templates/DESCRIPTION",
+                output_file   = paste0(package_path, "/DESCRIPTION"))
+
+
+#-----------------------------------------------------------------------------
 # Save the region descriptions for just this level
+#-----------------------------------------------------------------------------
 region.description <- geog.desc %>% filter(level==this_level)
 data_path          <- paste0(package_path, "/data/region.description.rda")
 save(region.description, file=data_path)
 
-# Copy a templated version of the docs for this file.
+#-----------------------------------------------------------------------------
+# Render a templated version of the docs for this region.description
+#-----------------------------------------------------------------------------
 render_template(data          =  list(level = this_level),
                 template_file = "package-templates/region.description.R",
                 output_file   = paste0(package_path, "/R/region.description.R"))
 
 
-# Load the table into a named variable
+#-----------------------------------------------------------------------------
+# Load all ABS tables for this level, and save in long format to the
+# package directory
+#-----------------------------------------------------------------------------
 config <- tableconfig[['B01']]
 for (config in tableconfig) {
     table  <- config$table
+    # Load the table into a named variable
     assign(table, read_abs(profile='BCP', table=table, level=this_level, long=TRUE))
 
-    # Save the table to the given output directory
+    # Save the data to the given output directory
     data_path    <- paste0(package_path, "/data/", table, ".rda")
     save(list=c(table), file=data_path)
 
-    # Save a templated version of the docs for this file.
+    # Render a templated version of the docs for this file.
     data          <- list(level=this_level, table=config$table, desc=config$desc)
     template_file <- "package-templates/Bxx.R"
     output_file   <- paste0(package_path, "/R/", table, ".R")
     render_template(data, template_file, output_file)
 }
 
-
+# Generate the actual man pages from the roxygen comments in the R files
+roxygenise(package_path)
 
 
