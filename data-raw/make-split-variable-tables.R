@@ -54,14 +54,22 @@ split_column_names <- function(column_names, config) {
 }
 
 #-----------------------------------------------------------------------------
-# Configs
+# Create and save tableconfig as a data element of this package
 #-----------------------------------------------------------------------------
+tableconfig <- make_tableconfig()
+save(tableconfig, file="../data/tableconfig.rda", compress='bzip2')
 
-if (FALSE) {
-    config <- b34config
+#-----------------------------------------------------------------------------
+# Make a list of components corresponding to splitting the column name
+#-----------------------------------------------------------------------------
+library(foreach)
+
+split.variables <- foreach(config=tableconfig) %do% {
     df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
     column_names <- df$colname
-    df <- split_column_names(df$colname, config)
-    df
-    df %>% as.data.frame
+    split_columns <- split_column_names(df$colname, config)
+    split_columns
 }
+names(split.variables) <- names(tableconfig)
+save(split.variables, file="../data/split.variables.rda", compress='bzip2')
+

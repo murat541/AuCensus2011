@@ -747,7 +747,7 @@ make_tableconfig <- function() {
         table    = table,
         desc     = desc,
         patterns = patterns,
-        stats    = c('methodcount', 'method', 'gender')
+        stats    = c('method_count', 'method', 'gender')
     )
 
     tableconfig
