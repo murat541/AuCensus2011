@@ -34,12 +34,22 @@ package_path <- paste("../AuCensus2011", this_level, sep=".")
 #-----------------------------------------------------------------------------
 # Copy across the package skeleton
 #-----------------------------------------------------------------------------
+# directory structure
 system(paste("cp -R 'package-skeleton/'", package_path))
 
+# project template
 command <- sprintf("cp 'package-templates/AuCensus2011.XXX.Rproj' %s/AuCensus2011.%s.Rproj",
                    package_path,
                    this_level)
 system(command)
+
+#-----------------------------------------------------------------------------
+# Render templated version of the README.md file.
+#-----------------------------------------------------------------------------
+render_template(data          =  list(level = this_level, level_desc = this_level_desc),
+                template_file = "package-templates/README.md",
+                output_file   = paste0(package_path, "/README.md"))
+
 
 #-----------------------------------------------------------------------------
 # Render templated version of the DESCRIPTION file.
