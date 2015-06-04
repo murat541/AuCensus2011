@@ -221,37 +221,25 @@ b15config <- list(
     stats = c('inst1', 'inst2', 'student_type', 'age', 'gender')
 )
 
-#-----------------------------------------------------------------------------
-#-----------------------------------------------------------------------------
-config <- b15config
-df <- read_abs('BCP', config$table, 'AUS', long=TRUE);
-column_names <- df$colname
-df <- split_column_names(df$colname, config)
-df
-df %>% as.data.frame
 
 #-----------------------------------------------------------------------------
 # B16 highest school level
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(gender_pattern, wild_pattern, make_age_pattern('Age'))
 b16config <- list(
     table    = 'B16',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_Age_(.*)_years',
-        '^(Males|Females|Persons)_(.*)_(Total)$'
-    ),
-    stats = c('gender', 'school', 'age')
+    patterns = patterns,
+    stats = c('gender', 'school_level', 'age')
 )
 
 
 #-----------------------------------------------------------------------------
 # B17 Personal income
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(gender_pattern, wild_pattern, make_age_pattern('Age'))
 b17config <- list(
     table    = 'B17',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_Age_(.*)_years',
-        '^(Males|Females|Persons)_(.*)_(Total)'
-    ),
+    patterns = patterns,
     stats = c('gender', 'income', 'age')
 )
 
@@ -259,41 +247,32 @@ b17config <- list(
 #-----------------------------------------------------------------------------
 # B18 persons needing assistance
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(gender_pattern, make_age_pattern(), wild_pattern)
 b18config <- list(
     table    = 'B18',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_years_(.*)',
-        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
-        '^(Males|Females|Persons)_(Total)_(.*)'
-    ),
-    stats = c('gender', 'age', 'assistance')
+    patterns = patterns,
+    stats = c('gender', 'age', 'need_assistance_status')
 )
 
 
 #-----------------------------------------------------------------------------
 # B19 volunteering
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(gender_pattern, make_age_pattern(), wild_pattern)
 b19config <- list(
     table    = 'B19',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_years_(.*)',
-        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
-        '^(Males|Females|Persons)_(Total)_(.*)'
-    ),
-    stats = c('gender', 'age', 'volunteer')
+    patterns = patterns,
+    stats = c('gender', 'age', 'volunteer_status')
 )
 
 
 #-----------------------------------------------------------------------------
 # B20 housework
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(gender_pattern, make_age_pattern(), wild_pattern)
 b20config <- list(
     table    = 'B20',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_years_(.*)',
-        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
-        '^(Males|Females|Persons)_(Total)_(.*)'
-    ),
+    patterns = patterns,
     stats = c('gender', 'age', 'housework')
 )
 
@@ -301,27 +280,21 @@ b20config <- list(
 #-----------------------------------------------------------------------------
 # B21 providing assistance
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(gender_pattern, make_age_pattern(), wild_pattern)
 b21config <- list(
     table    = 'B21',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_years_(.*)',
-        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
-        '^(Males|Females|Persons)_(Total)_(.*)'
-    ),
-    stats = c('gender', 'age', 'assistance')
+    patterns = patterns,
+    stats = c('gender', 'age', 'unpaid_assistance')
 )
 
 
 #-----------------------------------------------------------------------------
 # B22 childcare
 #-----------------------------------------------------------------------------
+patterns <- make_patterns(gender_pattern, make_age_pattern(), wild_pattern)
 b22config <- list(
     table    = 'B22',
-    patterns = c(
-        '^(Males|Females|Persons)_(.*)_years_(.*)',
-        '^(Males|Females|Persons)_(.*_years_and_over)_(.*)',
-        '^(Males|Females|Persons)_(Total)_(.*)'
-    ),
+    patterns = patterns,
     stats = c('gender', 'age', 'childcare')
 )
 
@@ -330,7 +303,7 @@ b22config <- list(
 # B23 household makeup
 #-----------------------------------------------------------------------------
 age_range <- make_age_pattern('Age')
-patterns <- make_patterns(gender_pattern, wild_pattern, age_range)
+patterns  <- make_patterns(gender_pattern, wild_pattern, age_range)
 
 b23config <- list(
     table    = 'B23',
@@ -342,10 +315,10 @@ b23config <- list(
 #-----------------------------------------------------------------------------
 # B24 children
 #-----------------------------------------------------------------------------
-#
 age_range <- make_age_pattern('Age_group_of_parent')
-Nchildren <- c('Number_of_children_ever_born_(.*)', '(Total)')
-patterns <- make_patterns(age_range, Nchildren)
+Nchildren <- c('Number_of_children_ever_born_(.*)',
+               '(Total)')
+patterns  <- make_patterns(age_range, Nchildren)
 b24config <- list(
     table    = 'B24',
     patterns = patterns,
@@ -357,29 +330,38 @@ b24config <- list(
 # B25 Family type
 #-----------------------------------------------------------------------------
 famtype <- '(Couple_family|One_parent_family|Total)'
-group <- '(Families|Persons)'
-patterns <- make_patterns(famtype, wild_pattern, group)
+child1  <- c('(with_no_children)()()')
+child2  <- '(with_children_under_15|with_no_children_under_15)_and_(dependent_students|no_dependent_students)_and_(non_dependent_children|no_non_dependent_children)'
+child3  <- '(with_children_under_15|with_no_children_under_15)_and_(Total)()'
+child4  <- 'with_(Total)()()'
+group   <- '(Families|Persons)'
+patterns <- c(make_patterns('(.*)()()()', group),
+              make_patterns(famtype, child1, group),
+              make_patterns(famtype, child2, group),
+              make_patterns(famtype, child3, group),
+              make_patterns(famtype, child4, group))
 patterns
 
 b25config <- list(
     table    = 'B25',
     patterns = patterns,
-    stats = c('stat1', 'stat2', 'group')
+    stats = c('stat1', 'stat2', 'stat3', 'stat4', 'group')
 )
 
 
 #-----------------------------------------------------------------------------
 # B26 Household incomine by family type
 #-----------------------------------------------------------------------------
-famtype <- c('(Couple_family_with_children|Other_family|One_parent_family|Total|Couple_family_with_no_children)')
+famtype  <- '(Couple_family_with_children|Other_family|One_parent_family|Total|Couple_family_with_no_children)'
 patterns <- make_patterns(wild_pattern, famtype)
 patterns
 
 b26config <- list(
     table    = 'B26',
     patterns = patterns,
-    stats = c('income', 'family')
+    stats = c('income', 'family_type')
 )
+
 
 
 #-----------------------------------------------------------------------------
@@ -413,29 +395,30 @@ b28config <- list(
 #-----------------------------------------------------------------------------
 # B29 motor vehicles per dwelling
 #-----------------------------------------------------------------------------
-vehicles <- c('(Total)', 'Number_of_motor_vehicles_per_dwelling_(.*)', 'Number_of_motor_vehicles_(not_stated)')
+vehicles <- c('(Total)',
+              'Number_of_motor_vehicles_per_dwelling_(.*)', 'Number_of_motor_vehicles_(not_stated)')
 patterns <- make_patterns(vehicles, 'Dwellings')
-patterns
 
 b29config <- list(
     table    = 'B29',
     patterns = patterns,
-    stats = c('cars')
+    stats = c('cars_per_dwelling')
 )
 
 
 #-----------------------------------------------------------------------------
 # B30 usual residency
 #-----------------------------------------------------------------------------
-households <- c('(Family|Non_family)_households', '(Total)')
-number <- c('Number_of_Persons_usually_resident_(.*)', '(Total)')
-patterns <- make_patterns(number, households)
-patterns
+households <- c('(Family|Non_family)_households',
+                '(Total)')
+number    <- c('Number_of_Persons_usually_resident_(.*)',
+               '(Total)')
+patterns  <- make_patterns(number, households)
 
 b30config <- list(
     table    = 'B30',
     patterns = patterns,
-    stats = c('number', 'household')
+    stats = c('usual_residents', 'household')
 )
 
 
@@ -445,8 +428,7 @@ b30config <- list(
 dwellperson <- '(Dwellings|Persons)'
 occupied <- '(Total|Occupied|Unoccupied)_private_dwellings'
 patterns <- c(make_patterns(occupied, wild, dwellperson),
-              make_patterns(occupied,       paste0('()', dwellperson))) # MFC TODO need better skipped pattern
-patterns
+              make_patterns(occupied,       paste0('()', dwellperson)))
 
 b31config <- list(
     table    = 'B31',
@@ -458,10 +440,10 @@ b31config <- list(
 #-----------------------------------------------------------------------------
 # B32 housing tenure
 #-----------------------------------------------------------------------------
-tenure <- c('(.*)', '(.*)_Dwelling_structure')
+tenure    <- c('(.*)',
+               '(.*)_Dwelling_structure')
 structure <- '(Total|Separate_house|Semi_detached_row_or_terrace_house_townhouse_etc|Flat_unit_or_apartment|Other_dwelling|not_stated)'
 patterns <- make_patterns(tenure, structure)
-patterns
 
 b32config <- list(
     table    = 'B32',
@@ -473,39 +455,40 @@ b32config <- list(
 #-----------------------------------------------------------------------------
 # B33 Mortgage
 #-----------------------------------------------------------------------------
-mortgage <- c('(.*)', '(.*)_Dwelling_structure')
-structure <- '(Total|Separate_house|Semi_detached_row_or_terrace_house_townhouse_etc|Flat_unit_or_apartment|Other_dwelling|Not_stated)'
-patterns <- make_patterns(mortgage, structure)
-patterns
+mortgage  <- wild_pattern
+structure <- c('Dwelling_structure_(.*?)',
+               '(Total)')
+patterns  <- make_patterns(mortgage, structure)
+
 b33config <- list(
     table    = 'B33',
     patterns = patterns,
-    stats = c('mortgage', 'structure')
+    stats    = c('mortgage', 'structure')
 )
 
 
 #-----------------------------------------------------------------------------
 # B34 Rent payments
 #-----------------------------------------------------------------------------
-agent_pattern <- c('Landlord_type_(Real_estate_agent|State_or_territory_housing_authority|Person_not_in_same_household|Housing_co_operative_community_church_group|Other_landlord_type|Not_stated)',
+agent_pattern <- c('Landlord_type_(.*?)',
                    '(Total)')
 patterns <- make_patterns(wild_pattern, agent_pattern)
 patterns
 b34config <- list(
     table    = 'B34',
     patterns = patterns,
-    stats = c('rent', 'landlord')
+    stats    = c('rent', 'landlord')
 )
 
 
 #-----------------------------------------------------------------------------
 # B35 Internet
 #-----------------------------------------------------------------------------
-structure <- c('Dwelling_structure_(Total|Separate_house|Semi_detached_row_or_terrace_house_townhouse_etc|Flat_Unit_or_Apartment|Other_dwelling|Not_stated)',
+structure  <- c('Dwelling_structure_(.*?)',
                '(Total)')
 connection <- c('(No_Internet_connection|Internet_connection_not_stated|Total)',
                 'Type_of_Internet_connection_(.*)')
-patterns <- make_patterns(connection, structure)
+patterns   <- make_patterns(connection, structure)
 patterns
 b35config <- list(
     table    = 'B35',
@@ -513,15 +496,14 @@ b35config <- list(
     stats = c('rent', 'landlord')
 )
 
+
 #-----------------------------------------------------------------------------
 # B36 Bedrooms
 #-----------------------------------------------------------------------------
-structure <- c('(.*)',
-               '(Total)')
-bedrooms <- c('Number_of_bedrooms_(.*)',
+structure <- wild_pattern
+bedrooms  <- c('Number_of_bedrooms_(.*)',
               '(Total)')
-patterns <- make_patterns(structure, bedrooms)
-patterns
+patterns  <- make_patterns(structure, bedrooms)
 
 b36config <- list(
     table    = 'B36',
@@ -534,10 +516,10 @@ b36config <- list(
 # B37 random
 #-----------------------------------------------------------------------------
 age          <- make_patterns('Persons_(aged_15_years_and_over)', gender_pattern)
-labour_force <- make_patterns('Labour_force_status_(.*)', gender_pattern)
-pc_employ    <- make_patterns('Percent_(.*)', gender_pattern)
-nsq          <- make_patterns('Non_school_qualifications_(.*)', gender_pattern)
-migration    <- make_patterns('Migration_Lived_at_(.*)', gender_pattern)
+labour_force <- make_patterns('Labour_force_status_(.*)'        , gender_pattern)
+pc_employ    <- make_patterns('Percent_(.*)'                    , gender_pattern)
+nsq          <- make_patterns('Non_school_qualifications_(.*)'  , gender_pattern)
+migration    <- make_patterns('Migration_Lived_at_(.*)'         , gender_pattern)
 
 patterns <- c(age, labour_force, pc_employ, nsq, migration)
 
