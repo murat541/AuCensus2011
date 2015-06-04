@@ -1,10 +1,10 @@
 Package: AuCensus2011.{{level}}
 Type: Package
-Title: 2011 Census data for {{level}} statistical regions (data from ABS)
+Title: 2011 Census data for {{level}} '{{level_desc}}' statistical regions (data from ABS)
 Version: 0.1
 Date: 2015-06-04
 Author: coolbutuseless@gmail.com
 Maintainer: mikefc <coolbutuseless@gmail.com>
-Description: Contains the Australian Census 2011 data for the {{level}} statistical regions (data from ABS).
+Description: Contains the Australian Census 2011 data for the {{level}} '{{level_desc}}' statistical regions (data from ABS).
 License: MIT + file LICENSE
 LazyData: TRUE

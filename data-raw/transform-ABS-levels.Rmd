@@ -1,0 +1,13 @@
+---
+title: "transform-levels"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+
+ABS.levels <- read.csv("levels.csv", as.is=TRUE) %>% select(level=code, desc=description)
+
+save(ABS.levels, file="../data/ABS.levels.rda", compress="bzip2")
+```
+

@@ -23,9 +23,11 @@ render_template <- function(data, template_file, output_file) {
 
 load("data/tableconfig.rda")
 load("data/geog.desc.rda")
+load("data/ABS.levels.rda")
 
 
-this_level   <- 'STE'
+this_level      <- 'STE'
+this_level_desc <- (ABS.levels %>% filter(level == this_level))$desc
 package_path <- paste("../AuCensus2011", this_level, sep=".")
 
 
@@ -34,10 +36,15 @@ package_path <- paste("../AuCensus2011", this_level, sep=".")
 #-----------------------------------------------------------------------------
 system(paste("cp -R 'package-skeleton/'", package_path))
 
+command <- sprintf("cp 'package-templates/AuCensus2011.XXX.Rproj' %s/AuCensus2011.%s.Rproj",
+                   package_path,
+                   this_level)
+system(command)
+
 #-----------------------------------------------------------------------------
 # Render templated version of the DESCRIPTION file.
 #-----------------------------------------------------------------------------
-render_template(data          =  list(level = this_level),
+render_template(data          =  list(level = this_level, level_desc = this_level_desc),
                 template_file = "package-templates/DESCRIPTION",
                 output_file   = paste0(package_path, "/DESCRIPTION"))
 
@@ -52,7 +59,7 @@ save(region.description, file=data_path)
 #-----------------------------------------------------------------------------
 # Render a templated version of the docs for this region.description
 #-----------------------------------------------------------------------------
-render_template(data          =  list(level = this_level),
+render_template(data          =  list(level = this_level, level_desc = this_level_desc),
                 template_file = "package-templates/region.description.R",
                 output_file   = paste0(package_path, "/R/region.description.R"))
 
@@ -72,7 +79,7 @@ for (config in tableconfig) {
     save(list=c(table), file=data_path)
 
     # Render a templated version of the docs for this file.
-    data          <- list(level=this_level, table=config$table, desc=config$desc)
+    data          <- list(level=this_level, level_desc = this_level_desc, table=config$table, desc=config$desc)
     template_file <- "package-templates/Bxx.R"
     output_file   <- paste0(package_path, "/R/", table, ".R")
     render_template(data, template_file, output_file)
