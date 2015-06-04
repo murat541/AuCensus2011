@@ -73,5 +73,8 @@ read_abs <- function(profile, table, level, long=FALSE) {
             mutate(colname = as.character(colname))
     }
 
+    # region_id needs to be 'character' to be able to merge with 'region.descriptions'
+    df %<>% mutate(region_id = as.character(region_id))
+
     df
 }
