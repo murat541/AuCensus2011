@@ -8,3 +8,5 @@ Maintainer: mikefc <coolbutuseless@gmail.com>
 Description: Contains the Australian Census 2011 data for the {{level}} '{{level_desc}}' statistical regions (data from ABS).
 License: MIT + file LICENSE
 LazyData: TRUE
+Depends:
+    R (>= 2.10)

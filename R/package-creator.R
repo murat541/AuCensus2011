@@ -20,13 +20,13 @@ render_template <- function(data, template_file, output_file) {
     writeLines(whisker::whisker.render(template, data), output_file)
 }
 
-create_level_package <- function() {
+create_level_package <- function(this_level='SSC') {
     load("data/tableconfig.rda")
     load("data/geog.desc.rda")
     load("data/ABS.levels.rda")
 
 
-    this_level      <- 'STE'
+
     this_level_desc <- (ABS.levels %>% filter(level == this_level))$desc
     package_path <- paste("../AuCensus2011", this_level, sep=".")
 
@@ -86,7 +86,7 @@ create_level_package <- function() {
 
         # Save the data to the given output directory
         data_path    <- paste0(package_path, "/data/", table, ".rda")
-        save(list=c(table), file=data_path)
+        save(list=c(table), file=data_path, compress='bzip2')
 
         # Render a templated version of the docs for this file.
         data          <- list(level=this_level, level_desc = this_level_desc, table=config$table, desc=config$desc)
@@ -96,7 +96,12 @@ create_level_package <- function() {
     }
 
     # Generate the actual man pages from the roxygen comments in the R files
-    roxygen2::roxygenise(package_path)
+    # roxygen2::roxygenise(package_path)
+
+    # Check/build the package
+    devtools::check(package_path)
+    devtools::build(package_path)
+
 
 
 }
