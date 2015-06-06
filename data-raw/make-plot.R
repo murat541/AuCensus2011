@@ -120,18 +120,6 @@ boundaries <- trim_polygons(boundaries, limits=brisbane)
 
 
 #-----------------------------------------------------------------------------
-# experimental featuer to remove plot regions that are tiny
-#-----------------------------------------------------------------------------
-remove_small_polygons <- function(boundaries) {
-    biguns <- plot.coords %>% group_by(id, group) %>% tally %>% filter(n > 100)
-    biguns <- rbind(biguns, data.frame(id=8, group=8.1, n=NA))
-
-    plot.coords %>% filter(group %in% biguns$group)
-}
-
-
-
-#-----------------------------------------------------------------------------
 # Merge the boundaries data and the absdata into a data.frame ready for ggplot
 #-----------------------------------------------------------------------------
 create_plotready_data <- function(boundaries, absdata) {
@@ -161,13 +149,20 @@ plot(boundaries)  # can I get a fill colour on this?
 #-----------------------------------------------------------------------------
 # Basic ggplot
 #-----------------------------------------------------------------------------
-plot.df <- create_plotready_data(boundaries, cycled)
+plot.df <- create_plotready_data(boundaries, filter(cycled, label %in% c('Toowong', 'Auchenflower')))
 
-m <- ggplot(plot.df) +
-    geom_polygon(aes(x=long, y=lat, group=group, fill=cycled)) +
-    coord_fixed()
-print(m)
+if (length(unique(plot.df$group)) > 1) {
+    m <- ggplot(plot.df) +
+        geom_polygon(aes(x=long, y=lat, group=group, fill=cycled)) +
+        coord_fixed()
+    print(m)
+} else {
 
+    m <- ggplot(plot.df) +
+        geom_polygon(aes(x=long, y=lat, group=group), fill='#333333') +
+        coord_fixed()
+    print(m)
+}
 
 #-----------------------------------------------------------------------------
 # ggmap plotting
@@ -176,8 +171,13 @@ library(ggmap)
 region_bbox <- sp::bbox(boundaries)
 amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
 
-ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group, fill=cycled), alpha=0.9) + coord_fixed()
-
+if (length(unique(plot.df$group)) > 1) {
+    p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group,  fill=cycled  ), alpha=0.9) + coord_fixed()
+    print(p)
+} else {
+    p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), fill='#333333', alpha=0.9) + coord_fixed()
+    print(p)
+}
 
 #-----------------------------------------------------------------------------
 # 'sp' plotting
