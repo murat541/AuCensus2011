@@ -8,8 +8,22 @@ library(rgdal) # port install gdal, R CMD INSTALL rgdal_0.9-1.tar.gz
 library(pryr)
 library(rgeos) # gSimplify  - port install geos; R CMD INSTALL rgeos_0.3-8.tar.gz
 
-
 library(AuCensus2011)
+
+
+#-----------------------------------------------------------------------------
+# The extents of the captial cities was chosen arbitrarily
+#-----------------------------------------------------------------------------
+#                 TOP             LEFT          BOTTOM        RIGHT
+australia <- list(latmax=-10    , lonmin=112  , latmin=-45  , lonmax=155)
+brisbane  <- list(latmax=-27.4  , lonmin=152.9, latmin=-27.7, lonmax=153.2)
+sydney    <- list(latmax=-33.75 , lonmin=151.1, latmin=-34.0, lonmax=151.3)
+melbourne <- list(latmax=-37.7  , lonmin=144.7, latmin=-37.9, lonmax=145.1)
+adelaide  <- list(latmax=-34.76 , lonmin=138.45,latmin=-35.0, lonmax=138.75)
+perth     <- list(latmax=-31.7  , lonmin=115.7 ,latmin=-32.5, lonmax=116.13)
+canberra  <- list(latmax=-35.19 , lonmin=149.0 ,latmin=-35.34,lonmax=149.2)
+hobart    <- list(latmax=-42.82 , lonmin=147.26,latmin=-42.9 ,lonmax=147.38)
+darwin    <- list(latmax=-12.32 , lonmin=130.80,latmin=-12.48,lonmax=130.91)
 
 #-----------------------------------------------------------------------------
 # Load data
@@ -17,7 +31,7 @@ library(AuCensus2011)
 abs_dir        <- paste0(Sys.getenv('HOME'), "/projectsdata/ABS2011/")
 shapefiles_dir <- paste0(abs_dir, "ESRI-Shapefile/")
 
-this_level <- 'STE'
+this_level <- 'SSC'
 
 b46 <- AuCensus2011::read_abs("BCP", "B46", this_level, long=TRUE) %>% inner_join(AuCensus2011::split.variables[['B46']]) %>%
     filter(gender == 'Persons') %>%
@@ -54,7 +68,7 @@ load_ABS_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'), 
 }
 
 boundaries <- load_ABS_shapefile(level=this_level)
-
+orig.boundaries <- boundaries
 
 
 #-----------------------------------------------------------------------------
@@ -76,20 +90,21 @@ simplify_polygons <- function(boundaries, simplification_tolerance = 0.01, prese
 
 boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.01)
 
-if (FALSE) {
-    plot(boundaries)  # can I get a fill colour on this?
 
-    # http://r-video-tutorial.blogspot.ch/2015/05/global-economic-maps.html
-    boundaries@data <- as.data.frame(cycled %<>% mutate(label = as.factor(label)))
-    system.time({
-        print(spplot(boundaries, "cycled"))
-    })
-    library(RColorBrewer)
-    spplot(boundaries, "label",
-           col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
-           col = "white"  # colour of boundary lines
-    )
-}
+# Now trim the boundaries to the area of interest
+# Create a sp SpatialPolygons object to represent the bounding area we are interested in.
+r1           <- cbind(c(limits$lonmin, limits$lonmax, limits$lonmax, limits$lonmin, limits$lonmin),
+                      c(limits$latmax, limits$latmax, limits$latmin, limits$latmin, limits$latmax))
+sr1          <- Polygons(list(Polygon(r1, hole=FALSE)), "r1")
+bbox_polygon <- SpatialPolygons(list(sr1), proj4string = CRS(proj4string(boundaries)))
+
+# Get the list of IDs of objects which lie within the bounding box
+isection_ids <- gIntersects(bbox_polygon, boundaries, byid=TRUE)
+
+# Keep only the geometry which lies within the bounding box
+boundaries <- boundaries[which(isection_ids),]
+
+
 
 
 #-----------------------------------------------------------------------------
@@ -126,10 +141,16 @@ create_plotready_data <- function(boundaries, absdata) {
 }
 
 
-plot.df <- create_plotready_data(boundaries, cycled)
+#-----------------------------------------------------------------------------
+# Basic base::plot
+#-----------------------------------------------------------------------------
+plot(boundaries)  # can I get a fill colour on this?
+
 #-----------------------------------------------------------------------------
 # Basic ggplot
 #-----------------------------------------------------------------------------
+plot.df <- create_plotready_data(boundaries, cycled)
+
 m <- ggplot(plot.df) +
     geom_polygon(aes(x=long, y=lat, group=group, fill=cycled)) +
     coord_fixed()
@@ -145,6 +166,19 @@ amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "ton
 
 ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group, fill=cycled)) + coord_fixed()
 
+
+#-----------------------------------------------------------------------------
+# 'sp' plotting
+#-----------------------------------------------------------------------------
+# http://r-video-tutorial.blogspot.ch/2015/05/global-economic-maps.html
+boundaries@data <- as.data.frame(cycled %<>% mutate(label = as.factor(label)))
+sp::spplot(boundaries, "cycled")
+
+library(RColorBrewer)
+sp::spplot(boundaries, "label",
+       col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
+       col = "white"  # colour of boundary lines
+)
 
 
 
