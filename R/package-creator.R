@@ -20,7 +20,7 @@ render_template <- function(data, template_file, output_file) {
     writeLines(whisker::whisker.render(template, data), output_file)
 }
 
-create_level_package <- function(this_level='SSC') {
+create_level_package <- function(this_level) {
     load("data/tableconfig.rda")
     load("data/geog.desc.rda")
     load("data/ABS.levels.rda")
@@ -95,11 +95,8 @@ create_level_package <- function(this_level='SSC') {
         render_template(data, template_file, output_file)
     }
 
-    # Generate the actual man pages from the roxygen comments in the R files
-    # roxygen2::roxygenise(package_path)
 
     # Check/build the package
-    devtools::check_doc(package_path)
     devtools::check(package_path)
     devtools::build(package_path)
 
