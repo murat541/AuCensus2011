@@ -1,5 +1,5 @@
 
-
+library(stringr)
 source('make-tableconfig.R')
 
 #=============================================================================
@@ -48,6 +48,12 @@ split_column_names <- function(column_names, config) {
 
     if (!is.null(config[['extra_manipulation']])) {
         labels <- labels %>% (config[['extra_manipulation']])
+    }
+
+    # make everything factors
+    labels <- labels %>% mutate(colname = as.factor(colname))
+    for (stat in config$stats) {
+        labels[[stat]] <- as.factor(labels[[stat]])
     }
 
     labels
