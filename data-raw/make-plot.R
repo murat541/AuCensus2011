@@ -88,22 +88,34 @@ simplify_polygons <- function(boundaries, simplification_tolerance = 0.01, prese
 }
 
 
-boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.01)
 
 
-# Now trim the boundaries to the area of interest
-# Create a sp SpatialPolygons object to represent the bounding area we are interested in.
-r1           <- cbind(c(limits$lonmin, limits$lonmax, limits$lonmax, limits$lonmin, limits$lonmin),
-                      c(limits$latmax, limits$latmax, limits$latmin, limits$latmin, limits$latmax))
-sr1          <- Polygons(list(Polygon(r1, hole=FALSE)), "r1")
-bbox_polygon <- SpatialPolygons(list(sr1), proj4string = CRS(proj4string(boundaries)))
+#-----------------------------------------------------------------------------
+# Trim shapefile to bounding box
+#-----------------------------------------------------------------------------
+trim_polygons <- function(boundaries, limits) {
+    cat("Trimming: Before:", as.numeric(pryr::object_size(boundaries)) / 1e6, "MB\n")
 
-# Get the list of IDs of objects which lie within the bounding box
-isection_ids <- gIntersects(bbox_polygon, boundaries, byid=TRUE)
+    # Now trim the boundaries to the area of interest
+    # Create a sp SpatialPolygons object to represent the bounding area we are interested in.
+    r1           <- cbind(c(limits$lonmin, limits$lonmax, limits$lonmax, limits$lonmin, limits$lonmin),
+                          c(limits$latmax, limits$latmax, limits$latmin, limits$latmin, limits$latmax))
+    sr1          <- Polygons(list(Polygon(r1, hole=FALSE)), "r1")
+    bbox_polygon <- SpatialPolygons(list(sr1), proj4string = CRS(proj4string(boundaries)))
 
-# Keep only the geometry which lies within the bounding box
-boundaries <- boundaries[which(isection_ids),]
+    # Get the list of IDs of objects which lie within the bounding box
+    isection_ids <- gIntersects(bbox_polygon, boundaries, byid=TRUE)
 
+    # Keep only the geometry which lies within the bounding box
+    boundaries <- boundaries[which(isection_ids),]
+
+    cat("Trimming: After :", as.numeric(pryr::object_size(boundaries)) / 1e6, "MB\n")
+    boundaries
+}
+
+
+# boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.00)
+boundaries <- trim_polygons(boundaries, limits=brisbane)
 
 
 
@@ -164,7 +176,7 @@ library(ggmap)
 region_bbox <- sp::bbox(boundaries)
 amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
 
-ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group, fill=cycled)) + coord_fixed()
+ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group, fill=cycled), alpha=0.9) + coord_fixed()
 
 
 #-----------------------------------------------------------------------------
@@ -176,8 +188,8 @@ sp::spplot(boundaries, "cycled")
 
 library(RColorBrewer)
 sp::spplot(boundaries, "label",
-       col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
-       col = "white"  # colour of boundary lines
+           col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
+           col = "white"  # colour of boundary lines
 )
 
 
