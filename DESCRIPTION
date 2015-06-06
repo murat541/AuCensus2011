@@ -14,5 +14,5 @@ Imports:
     readr,
     dplyr,
     tidyr,
-    roxygen2,
-    whisker
+    whisker,
+    devtools

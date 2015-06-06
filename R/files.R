@@ -70,11 +70,11 @@ read_abs <- function(profile, table, level, long=FALSE) {
     if (long) {
         # Convert from wide to long format.
         df <- df %>% tidyr::gather(colname, count, -region_id) %>%
-            mutate(colname = as.character(colname))
+            dplyr::mutate(colname = as.factor(as.character(colname)))
     }
 
     # region_id needs to be 'character' to be able to merge with 'region.descriptions'
-    df %<>% mutate(region_id = as.character(region_id))
+    df <- df %>% dplyr::mutate(region_id = as.factor(as.character(region_id)))
 
     df
 }

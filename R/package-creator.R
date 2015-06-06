@@ -86,7 +86,7 @@ create_level_package <- function(this_level='SSC') {
 
         # Save the data to the given output directory
         data_path    <- paste0(package_path, "/data/", table, ".rda")
-        save(list=c(table), file=data_path, compress='bzip2')
+        save(list=c(table), file=data_path, compress='xz')
 
         # Render a templated version of the docs for this file.
         data          <- list(level=this_level, level_desc = this_level_desc, table=config$table, desc=config$desc)
@@ -99,6 +99,7 @@ create_level_package <- function(this_level='SSC') {
     # roxygen2::roxygenise(package_path)
 
     # Check/build the package
+    devtools::check_doc(package_path)
     devtools::check(package_path)
     devtools::build(package_path)
 
