@@ -1,12 +1,18 @@
-library(magrittr)
-library(dplyr)
-library(AuCensus2011)
-library(sp)
-library(foreach)
+if (FALSE) {
+    library(sp)
+    library(foreach)
+}
 
+#' Load an ASGS shapefile
+#'
+#' Load an ASGS shapefile supplied by the ABS
+#'
+#' Load an ASGS shapefile
+#'
+#' @export
 #' @param level Structure level e.g. GCCSA, SSC, POA etc
-#' @shapefiles_dir location of shapefile directories
-#' @return SpatialPolygonsDataFrame
+#' @param shapefiles_dir location of shapefile directories
+#' @return ASGS shapefile (SpatialPolygonsDataFrame)
 #'
 asgs_load_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'), "/projectsdata/ABS2011/ESRI-Shapefile/")) {
     # dsn name e.g. "2011_GCCSA_shape", layer name = "GCCSA_2011_AUST"
@@ -23,8 +29,15 @@ asgs_load_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'),
     boundaries
 }
 
+#' Extract a named region from an ASGS shapefile
+#'
+#' Extract a named region from an ASGS shapefile
+#'
+#' Extract a named region from an ASGS shapefile
+#'
+#' @export
 #' @param region_name character string of the name to extract
-#' @param boundaries SpatialPolygonsDataFrame
+#' @param boundaries ASGS shapefile (SpatialPolygonsDataFrame)
 asgs_extract_named_region <- function(region_name, boundaries) {
     # For ABS/ASGS files, the named column is always the second one.
     polygon_index <- which(boundaries@data[[2]] == region_name)
@@ -41,8 +54,15 @@ asgs_extract_named_region <- function(region_name, boundaries) {
 #-----------------------------------------------------------------------------
 # Calculating centroids within polygons
 #-----------------------------------------------------------------------------
+#' Return the centroid of a named region of a shapefile as a data.frame
+#'
+#' Return the centroid of a named region of a shapefile as a data.frame
+#'
+#' Return the centroid of a named region of a shapefile as a data.frame
+#'
+#' @export
 #' @param name character string of region to extract
-#' @param boundaries SpatialPolygonsDataFrame
+#' @param boundaries ASGS shapefile (SpatialPolygonsDataFrame)
 #' @return data.frame with (longitude, latitude) of region centroid
 asgs_get_centroid_by_name <- function(name, boundaries) {
     region   <- asgs_extract_named_region(name, boundaries)
@@ -51,8 +71,15 @@ asgs_get_centroid_by_name <- function(name, boundaries) {
     centroid
 }
 
+#' Return the centroid of a named region of a shapefile as SpatialPoints
+#'
+#' Return the centroid of a named region of a shapefile as SpatialPoints
+#'
+#' Return the centroid of a named region of a shapefile as SpatialPoints
+#'
+#' @export
 #' @param name character string of region to extract
-#' @param boundaries SpatialPolygonsDataFrame
+#' @param boundaries ASGS shapefile (SpatialPolygonsDataFrame)
 #' @return SpatialPoints structure containing (longitude, latitude) of region centroid
 asgs_get_spcentroid_by_name <- function(name, boundaries) {
     centroid <- asgs_get_centroid_by_name(name, boundaries)
@@ -60,11 +87,14 @@ asgs_get_spcentroid_by_name <- function(name, boundaries) {
 }
 
 
-#' asgs_get_all_spcentroids
-#' Calculate the centroids of all the objects in 'boundaries' and return them as a
-#' a collection i.e. SpatialPointsDataFrame
+#' Calculate a SpatialPointsDataFrame of the centroids of every region in an ASGS shapefile
 #'
-#' @param boundaries
+#' Calculate a SpatialPointsDataFrame of the centroids of every region in an ASGS shapefile
+#'
+#' Calculate a SpatialPointsDataFrame of the centroids of every region in an ASGS shapefile
+#'
+#' @export
+#' @param boundaries ASGS shapefile (SpatialPolygonsDataFrame)
 #' @return SpatialPointsDataFrame contains the centroids of all the regions in the given 'boundaries'
 asgs_get_all_spcentroids <- function(boundaries) {
     all_centroids <- foreach(name=boundaries[[2]], .combine=rbind) %do% {

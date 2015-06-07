@@ -15,4 +15,7 @@ Imports:
     dplyr,
     tidyr,
     whisker,
-    devtools
+    devtools,
+    sp,
+    foreach,
+    rgdal
