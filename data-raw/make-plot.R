@@ -115,7 +115,7 @@ trim_polygons <- function(boundaries, limits) {
 
 
 # boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.00)
-boundaries <- trim_polygons(boundaries, limits=brisbane)
+boundaries <- trim_polygons(boundaries, limits=melbourne)
 
 
 
@@ -149,7 +149,8 @@ plot(boundaries)  # can I get a fill colour on this?
 #-----------------------------------------------------------------------------
 # Basic ggplot
 #-----------------------------------------------------------------------------
-plot.df <- create_plotready_data(boundaries, filter(cycled, label %in% c('Toowong', 'Auchenflower')))
+# plot.df <- create_plotready_data(boundaries, filter(cycled, label %in% c('Toowong', 'Auchenflower')))
+plot.df <- create_plotready_data(boundaries, cycled)
 
 if (length(unique(plot.df$group)) > 1) {
     m <- ggplot(plot.df) +
@@ -178,6 +179,19 @@ if (length(unique(plot.df$group)) > 1) {
     p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), fill='#333333', alpha=0.9) + coord_fixed()
     print(p)
 }
+
+
+
+#-----------------------------------------------------------------------------
+# ggmap plotting boundaries only
+#-----------------------------------------------------------------------------
+library(ggmap)
+region_bbox <- sp::bbox(boundaries)
+amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
+
+p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), colour='black', fill=NA) + coord_fixed()
+print(p)
+
 
 #-----------------------------------------------------------------------------
 # 'sp' plotting
