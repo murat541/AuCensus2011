@@ -112,13 +112,38 @@ if (FALSE) {
     postcodes <- asgs_load_shapefile(level='POA')
     gccsas    <- asgs_load_shapefile(level='GCCSA')
     sa3       <- asgs_load_shapefile(level='SA3')
+    sa1       <- asgs_load_shapefile(level='SA1')
 
-    gccsa_centroids <- get_all_spcentroids(gccsas)
+
+    parent_region <- gccsas
+    child_region  <- suburbs
+
     system.time({
-        res <- gContains(states, gccsa_centroids, byid=TRUE)
+        # suburbs = 43s
+        child_centroids <- asgs_get_all_spcentroids(child_region)
     })
-    colnames(res) <- states[[2]]
-    rownames(res) <- gccsa_centroids[[2]]
-    print(res)
+
+    system.time({
+        # suburbs in gccsas = 200s
+        res <- rgeos::gContains(parent_region, child_region, byid=TRUE, returnDense=TRUE)
+    })
+    colnames(res) <- parent_region[[2]]
+    rownames(res) <- child_region[[2]]
+    head(res)
+
+    # There should only be a single truth value per row
+    # e.g. a suburb can only be in a single state.
+    Nparents <- apply(res, 1, sum)
+
+    if (all(Nparents != 1)) {
+        bad <- which(Nparents != 1)
+        Nparents[bad]
+        res[bad,] %>% head
+
+    }
+
+    apply(res, 1, . %>% which %>% colnames(res)[[.]])
+
+
 }
 
