@@ -25,15 +25,18 @@ Australian Statistical Geography Standard
 
 Links to core ASGS pages with CSV correnspondes between levels and ESRI Shapefiles.
 
-* `ABS2011/asgs1` [1270.0.55.001 - Australian Statistical Geography Standard (ASGS): Volume 1 - Main Structure and Greater Capital City     Statistical Areas, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.001)
+* `ABS2011/ASGS1` [1270.0.55.001 - Australian Statistical Geography Standard (ASGS): Volume 1 - Main Structure and Greater Capital City     Statistical Areas, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.001)
     * Includes MeshBlock shapefiles and correspondences
-* `ABS2011/asgs2` [1270.0.55.002 - Australian Statistical Geography Standard (ASGS): Volume 2 - Indigenous Structure, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.002)
-* `ABS2011/asgs3` [1270.0.55.003 - Australian Statistical Geography Standard (ASGS): Volume 3 - Non ABS Structures, July 2014 ](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.003)
-* `ABS2011/asgs4` [1270.0.55.004 - Australian Statistical Geography Standard (ASGS): Volume 4 - Significant Urban Areas, Urban Centres and Localities, Section of State, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.004)
-* `ABS2011/asgs5` [1270.0.55.005 - Australian Statistical Geography Standard (ASGS): Volume 5 - Remoteness Structure, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.005)
+* `ABS2011/ASGS2` [1270.0.55.002 - Australian Statistical Geography Standard (ASGS): Volume 2 - Indigenous Structure, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.002)
+* [1270.0.55.003 - Australian Statistical Geography Standard (ASGS): Volume 3 - Non ABS Structures, July 2014 ](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.003)
+    * Non-ABS structures have been updated every year
+    * `ABS2011/ASGS3.July2011`
+    * `ABS2011/ASGS3.July2012`
+    * `ABS2011/ASGS3.July2013`
+    * `ABS2011/ASGS3.July2014`
+* `ABS2011/ASGS4` [1270.0.55.004 - Australian Statistical Geography Standard (ASGS): Volume 4 - Significant Urban Areas, Urban Centres and Localities, Section of State, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.004)
+* `ABS2011/ASGS5` [1270.0.55.005 - Australian Statistical Geography Standard (ASGS): Volume 5 - Remoteness Structure, July 2011](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1270.0.55.005)
 
 Meshblocks
 ----------
 * `ABS2011/MeshblockStats/censuscounts_mb_2011_aust.csv` The only released statistics at the Meshblock level are `Persons usually resident` and `Dwellings`[2074.0 - Census of Population and Housing: Mesh Block Counts, 2011](http://www.abs.gov.au/AUSSTATS/abs@.nsf/Lookup/2074.0Main+Features12011)
-* `ABS2011/Meshblocks2006` Old 2006 Meshblock boundaries.  data. [1209.0.55.002 - Mesh Blocks Digital Boundaries, Australia, 2006](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1209.0.55.002/)
-    * **Deprecated**. Refer to *'ASGS Volume 1 - Main Structure'* for 2011 Meshblock structures.

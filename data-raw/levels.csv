@@ -1,22 +1,25 @@
-code,description
-AUS,Australia
-CED,Commonwealth Electoral Divisions
-GCCSA,Greater Capital City Statistical Areas
-IARE,Indigenous Areas
-ILOC,Indigenous Locations
-IREG,Indigenous Regions
-LGA,Local Government Areas
-POA,Postal Areas
-RA,Remoteness Areas
-SA1,Statistical Area Level 1
-SA2,Statistical Area Level 2
-SA3,Statistical Area Level 3
-SA4,Statistical Area Level 4
-SED,State Electoral Divisions
-SLA,Statistical Local Areas
-SOS,Section of State
-SOSR,Section of State Ranges
-SSC,State Suburbs
-STE,States and Territories
-SUA,Significant Urban Areas
-UCL,Urban Centres and Localities
+level,code_name,geog,volume,structure,desc
+AUS,,,,ABS,Australia
+GCCSA,GCC_CODE11,ASGS,1270055001,ABS,Greater Capital City Statistical Areas
+SA1,SA1_MAIN11,ASGS,1270055001,ABS,Statistical Area Level 1
+SA2,SA2_MAIN11,ASGS,1270055001,ABS,Statistical Area Level 2
+SA3,SA3_CODE11,ASGS,1270055001,ABS,Statistical Area Level 3
+SA4,SA4_CODE11,ASGS,1270055001,ABS,Statistical Area Level 4
+STE,STE_CODE11,ASGS,1270055001,ABS,States and Territories
+IARE,IA_CODE11,ASGS,1270055002,ABS,Indigenous Areas
+ILOC,IL_CODE11,ASGS,1270055002,ABS,Indigenous Locations
+IREG,IR_CODE11,ASGS,1270055002,ABS,Indigenous Regions
+ADD,ADD_CODE,ASGS,1270055003,Non-ABS,Australian Drainage Divisions
+CED,CED_CODE,ASGS,1270055003,Non-ABS,Commonwealth Electoral Divisions
+LGA,LGA_CODE11,ASGS,1270055003,Non-ABS,Local Government Areas
+NRMR,NRMR_CODE,ASGS,1270055003,Non-ABS,Natural Resource Management Regions
+POA,POA_CODE,ASGS,1270055003,Non-ABS,Postal Areas
+SED,SED_CODE,ASGS,1270055003,Non-ABS,State Electoral Divisions
+SSC,SSC_CODE,ASGS,1270055003,Non-ABS,State Suburbs
+TR,TR_CODE11,ASGS,1270055003,Non-ABS,Tourism Region
+SOS,SOS_CODE11,ASGS,1270055004,ABS,Section of State
+SOSR,SSR_CODE11,ASGS,1270055004,ABS,Section of State Ranges
+SUA,SUA_CODE11,ASGS,1270055004,ABS,Significant Urban Areas
+UCL,URL_CODE11,ASGS,1270055004,ABS,Urban Centres and Localities
+RA,RA_CODE11,ASGS,1270055005,ABS,Remoteness Areas
+SLA,,ASGC,,,Statistical Local Areas

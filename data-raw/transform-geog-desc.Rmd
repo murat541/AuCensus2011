@@ -23,7 +23,7 @@ geog.desc <- readr::read_csv("2011Census_geog_desc_1st_and_2nd_release.csv")
 geog.desc <- geog.desc[, 1:5]
 
 # Some renaming.
-geog.desc %<>% select(level=Level, region_id=Code, label=Label, area=`Area sqkm`) %>%
+geog.desc %<>% select(level=Level, code=Code, label=Label, area=`Area sqkm`) %>%
     mutate(level     = as.factor(level))
 
 save(geog.desc, file='../data/geog.desc.rda', compress='bzip2')
