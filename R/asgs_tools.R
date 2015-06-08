@@ -39,7 +39,7 @@ asgs.volume.info <- list(
 #' @param shapefiles_dir location of shapefile directories
 #' @return ASGS shapefile (SpatialPolygonsDataFrame)
 #'
-asgs_load_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'), "/projectsdata/ABS2011/ASGS/")) {
+read_asgs_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'), "/projectsdata/ABS2011/ASGS/")) {
     level    <- toupper(level)
     stopifnot(level %in% names(asgs.volume.info))
     level_lc <- tolower(level)
@@ -132,12 +132,12 @@ asgs_get_all_spcentroids <- function(boundaries) {
 
 if (FALSE) {
 
-    states    <- asgs_load_shapefile(level='STE')
-    suburbs   <- asgs_load_shapefile(level='SSC')
-    postcodes <- asgs_load_shapefile(level='POA')
-    gccsas    <- asgs_load_shapefile(level='GCCSA')
-    sa3       <- asgs_load_shapefile(level='SA3')
-    sa1       <- asgs_load_shapefile(level='SA1')
+    states    <- read_asgs_shapefile(level='STE')
+    suburbs   <- read_asgs_shapefile(level='SSC')
+    postcodes <- read_asgs_shapefile(level='POA')
+    gccsas    <- read_asgs_shapefile(level='GCCSA')
+    sa3       <- read_asgs_shapefile(level='SA3')
+    sa1       <- read_asgs_shapefile(level='SA1')
 
 
     parent_region <- gccsas
