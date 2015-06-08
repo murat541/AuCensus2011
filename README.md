@@ -6,6 +6,11 @@ Install:
 devtools::install_github("coolbutuseless/AuCensus2011")
 ```
 
+DataPacks
+=========
+* Need an account to access datapacks. 
+* TODO: Walk through account signup
+* TODO: Detail which datapacks to download i.e. always choose the the "AUSTRALIA All Regions" with "long header"
 
 Geography Home
 ==============
@@ -29,7 +34,6 @@ Links to core ASGS pages with CSV correnspondes between levels and ESRI Shapefil
 
 Meshblocks
 ----------
-All the ASGS regions are based upon Meshblocks
-* `ABS2011/Meshblocks2006` Old 2006 Meshblock boundaries.  Deprecated. Instead, refer to *ASGS Volume 1 - Main Structure* data. [1209.0.55.002 - Mesh Blocks Digital Boundaries, Australia, 2006](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1209.0.55.002/)
-* http://www.abs.gov.au/AUSSTATS/abs@.nsf/Lookup/2074.0Main+Features12011
-    * The only released meshblock statistics are `Persons usually resident` and `Dwellings` , available in the the file: [CensusCounts_MB_2011_AUST.csv](http://www.abs.gov.au/ausstats/subscriber.nsf/log?openagent&censuscounts_mb_2011_aust.csv&2074.0&Data%20Cubes&B573366A0A37265ACA257AD0000F1E5A&0&2011&11.12.2012&Latest)
+* `ABS2011/MeshblockStats/censuscounts_mb_2011_aust.csv` The only released statistics at the Meshblock level are `Persons usually resident` and `Dwellings`[2074.0 - Census of Population and Housing: Mesh Block Counts, 2011](http://www.abs.gov.au/AUSSTATS/abs@.nsf/Lookup/2074.0Main+Features12011)
+* `ABS2011/Meshblocks2006` Old 2006 Meshblock boundaries.  data. [1209.0.55.002 - Mesh Blocks Digital Boundaries, Australia, 2006](http://www.abs.gov.au/ausstats/abs@.nsf/mf/1209.0.55.002/)
+    * **Deprecated**. Refer to *'ASGS Volume 1 - Main Structure'* for 2011 Meshblock structures.
