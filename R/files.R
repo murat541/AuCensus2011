@@ -55,7 +55,7 @@ create_abs_filename <- function(profile, table, level) {
 #' @examples
 #' read_abs('BCP', 'B46', 'AUS')
 #'
-read_abs <- function(profile, table, level, long=FALSE) {
+read_abs <- function(profile, table, level, long=TRUE) {
     # Find all the files that match the table name + wildcard
     filename.glob <- create_abs_filename(profile, paste0(table, "*"), level)
     filenames <- Sys.glob(filename.glob)
@@ -75,6 +75,13 @@ read_abs <- function(profile, table, level, long=FALSE) {
 
     # region_id needs to be 'character' to be able to merge with 'region.descriptions'
     df <- df %>% dplyr::mutate(region_id = as.factor(as.character(region_id)))
+
+    if (level %in% asgs.info$level) {
+        # Then we'll recode the region_id column to match the level name in the
+        # ASGS Shapefiles so that we can do datamerges without losing information
+        code_name <- asgs.info$code_name[asgs.info$level == level]
+        colnames(df)[1] <- code_name
+    }
 
     df
 }
