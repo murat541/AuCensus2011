@@ -18,3 +18,5 @@ vignettes/*.pdf
 data-raw/2011Census_geog_desc_1st_and_2nd_release.csv
 data-raw/*.html
 data-raw/*.pdf
+
+*#
