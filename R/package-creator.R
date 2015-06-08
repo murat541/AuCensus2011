@@ -22,12 +22,12 @@ render_template <- function(data, template_file, output_file) {
 
 create_level_package <- function(this_level) {
     load("data/tableconfig.rda")
-    load("data/geog.desc.rda")
-    load("data/ABS.levels.rda")
+    load("data/asgs.info.rda")
+    load("data/asgs.code.rda")
 
 
 
-    this_level_desc <- (ABS.levels %>% filter(level == this_level))$desc
+    this_level_desc <- (asgs.info %>% filter(level == this_level))$desc
     package_path <- paste("../AuCensus2011", this_level, sep=".")
 
 
@@ -62,7 +62,7 @@ create_level_package <- function(this_level) {
     #-----------------------------------------------------------------------------
     # Save the region descriptions for just this level
     #-----------------------------------------------------------------------------
-    region.description <- geog.desc %>% filter(level==this_level)
+    region.description <- asgs.code %>% filter(level==this_level)
     data_path          <- paste0(package_path, "/data/region.description.rda")
     save(region.description, file=data_path)
 
@@ -82,7 +82,7 @@ create_level_package <- function(this_level) {
     for (config in tableconfig) {
         table  <- config$table
         # Load the table into a named variable
-        assign(table, read_abs(profile='BCP', table=table, level=this_level, long=TRUE))
+        assign(table, read_abs(profile='BCP', table=table, level=this_level))
 
         # Save the data to the given output directory
         data_path    <- paste0(package_path, "/data/", table, ".rda")

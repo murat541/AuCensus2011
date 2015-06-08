@@ -12,4 +12,4 @@
 #'  \item{label}{Full text label}
 #'  \item{area}{Area of region in square kms}
 #' }
-"geog.desc"
+"asgs.code"

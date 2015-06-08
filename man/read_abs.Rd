@@ -4,7 +4,7 @@
 \alias{read_abs}
 \title{Load an ABS DataPack file}
 \usage{
-read_abs(profile, table, level, long = FALSE)
+read_abs(profile, table, level, long = TRUE)
 }
 \arguments{
 \item{profile}{The short code for the profile. e.g. 'BCP' for Basic Community Profile.}

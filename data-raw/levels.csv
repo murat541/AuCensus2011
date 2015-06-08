@@ -1,5 +1,5 @@
 level,code_name,geog,volume,structure,desc
-AUS,,,,ABS,Australia
+AUS,NA,NA,NA,ABS,Australia
 GCCSA,GCC_CODE11,ASGS,1270055001,ABS,Greater Capital City Statistical Areas
 SA1,SA1_MAIN11,ASGS,1270055001,ABS,Statistical Area Level 1
 SA2,SA2_MAIN11,ASGS,1270055001,ABS,Statistical Area Level 2
@@ -22,4 +22,4 @@ SOSR,SSR_CODE11,ASGS,1270055004,ABS,Section of State Ranges
 SUA,SUA_CODE11,ASGS,1270055004,ABS,Significant Urban Areas
 UCL,URL_CODE11,ASGS,1270055004,ABS,Urban Centres and Localities
 RA,RA_CODE11,ASGS,1270055005,ABS,Remoteness Areas
-SLA,,ASGC,,,Statistical Local Areas
+SLA,NA,ASGC,NA,NA,Statistical Local Areas
