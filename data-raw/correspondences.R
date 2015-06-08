@@ -12,9 +12,11 @@ library(readr)
 #-----------------------------------------------------------------------------
 corr_dir <- paste(Sys.getenv('HOME'), "/projectsdata/ABS2011/ASGS.Correspondence", sep="/")
 
-#-----------------------------------------------------------------------------
-# Load and merge all the meshblock equivalences
-#-----------------------------------------------------------------------------
+#=============================================================================
+#
+# MESHBLOCKS ALLOCATION
+#
+#=============================================================================
 # Get names of all Meshblock correspondence files
 mb_files <- list.files(corr_dir, pattern="MB_*", full.names = TRUE)
 mb_files
@@ -33,6 +35,18 @@ mb <- mb %>% select(MB_CODE_2011, MB_CATEGORY_2011, SA1_MAINCODE_2011, SA1_7DIGI
            GCCSA_CODE_2011  = as.factor(GCCSA_CODE_2011))
 pryr::object_size(mb)
 
+#-----------------------------------------------------------------------------
+# Allocation of MB in LGA
+#-----------------------------------------------------------------------------
+lga_corr_files <- list.files(corr_dir, pattern="LGA_*", full.names = TRUE)
+print(lga_corr_files)
+corr <- foreach(corr_file=lga_corr_files, .combine=rbind) %do% {
+    read_csv(corr_file)
+}
+asgs.mb.lga <- corr %>%
+    select(MB_CODE_2011, LGA_CODE_2011) %>%
+    distinct
+pryr::object_size(asgs.mb.lga)
 
 #-----------------------------------------------------------------------------
 # Allocation of MB in SA1
@@ -40,18 +54,77 @@ pryr::object_size(mb)
 asgs.mb.sa1 <- mb %>% select(MB_CODE_2011, MB_CATEGORY_2011, SA1_MAINCODE_2011, SA1_7DIGITCODE_2011)
 pryr::object_size(asgs.mb.sa1)
 
+#-----------------------------------------------------------------------------
+# Merge MB allocations
+#   - MB -> SA1
+#   - MB -> LGA
+#-----------------------------------------------------------------------------
+asgs.mb <- dplyr::left_join(asgs.mb.sa1, asgs.mb.lga)
+pryr::object_size(asgs.mb)
+dim(asgs.mb)
 
+save(asgs.mb, file="../data/asgs.mb.rda", compress='bzip2')
+
+
+
+#=============================================================================
+#
+# SA1 Allocation
+#
+#=============================================================================
 
 #-----------------------------------------------------------------------------
-# Allocation of SA1 in SA2
+# Allocation of SA1 in SA2 (from MeshBlock file)
 #-----------------------------------------------------------------------------
 asgs.sa1.sa2 <- mb %>%
     select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011) %>%
     distinct
 pryr::object_size(asgs.sa1.sa2)
 
+#-----------------------------------------------------------------------------
+# Allocation of SA1
+#-----------------------------------------------------------------------------
+sa1 <- list(
+    CED  = list(pattern='CED_*', columns='CED_CODE_2011'),
+    NRMR = list(pattern='NRMR*', columns='NRMR_CODE_2011'),
+    POA  = list(pattern='POA_*', columns='POA_CODE_2011'),
+    RA   = list(pattern='RA_*' , columns='RA_CODE_2011'),
+    UCL  = list(pattern='SOSR*', columns=c("UCL_CODE_2011", "SOSR_CODE_2011", "SOS_CODE_2011")),
+    SED  = list(pattern='SED_*', columns='SED_CODE_2011'),
+    SSC  = list(pattern='SSC_*', columns='SSC_CODE_2011')
+)
+
+level <- 'SSC'
+sa1_allocations <- foreach(level=names(sa1)) %do% {
+    info <- sa1[[level]]
+    all_columns <- c('SA1_MAINCODE_2011', info$columns)
+    corr_file <- list.files(corr_dir, pattern=info$pattern, full.names = TRUE)
+    print(corr_file)
+    corr <- read_csv(corr_file)
+    tmp <- corr %>%
+        select_(.dots = all_columns) %>%
+        distinct
+    pryr::object_size(tmp)
+    tmp
+}
+
+#-----------------------------------------------------------------------------
+# Merge SA1 allocations
+#-----------------------------------------------------------------------------
+sa1_allocations[['SA2']] <- asgs.sa1.sa2
+asgs.sa1 <- Reduce(dplyr::left_join, sa1_allocations) %>%
+    select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, everything())
+pryr::object_size(asgs.sa1)
 
 
+save(asgs.sa1, file="../data/asgs.sa1.rda", compress='bzip2')
+
+
+#=============================================================================
+#
+# SA2 Allocation
+#
+#=============================================================================
 #-----------------------------------------------------------------------------
 # Allocation of SA2 in SA3
 #-----------------------------------------------------------------------------
@@ -61,151 +134,9 @@ asgs.sa2.sa3 <- mb %>%
 pryr::object_size(asgs.sa2.sa3)
 
 #-----------------------------------------------------------------------------
-# Allocation of SA3 in SA4
+# Allocation of SA2 in SED
 #-----------------------------------------------------------------------------
-asgs.sa3.sa4 <- mb %>%
-    select(SA3_CODE_2011, SA4_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa3.sa4)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA4 in GCCSA
-#-----------------------------------------------------------------------------
-asgs.sa4.gccsa <- mb %>%
-    select(SA4_CODE_2011, GCCSA_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa4.gccsa)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA4 in STE
-#-----------------------------------------------------------------------------
-asgs.sa4.ste <- mb %>%
-    select(SA4_CODE_2011, STATE_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa4.ste)
-
-
-include_files <- c('CED', 'LGA', 'NRMR', 'POA', 'SA1_2011_RA', 'SA1_UCL_SOSR_SOS_2011_AUST', 'SA2_SUA', 'SED', 'SSC', 'STE', 'TR_2011')
-corr_files <- setdiff(list.files(corr_dir, pattern="*.csv", full.names = TRUE), mb_files)
-pattern <- paste(include_files, collapse="|")
-corr_files <- corr_files[grepl(pattern, corr_files)]
-
-
-
-#-----------------------------------------------------------------------------
-# Allocation of CED in GCCSA
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[1]
-print(corr_file) # CED
-corr <- read_csv(corr_file)
-asgs.sa1.ced <- corr %>%
-    select(SA1_MAINCODE_2011, CED_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa1.ced)
-
-#-----------------------------------------------------------------------------
-# Allocation of MB in LGA
-#-----------------------------------------------------------------------------
-lga_corr_files <- corr_files[grepl("LGA", corr_files)]
-print(lga_corr_files) # CED
-corr <- foreach(corr_file=lga_corr_files, .combine=rbind) %do% {
-    read_csv(corr_file)
-}
-asgs.mb.lga <- corr %>%
-    select(MB_CODE_2011, LGA_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.mb.lga)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA1 in NRMR
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[11]
-print(corr_file) # NRMR
-corr <- read_csv(corr_file)
-asgs.sa1.nrmr <- corr %>%
-    select(SA1_MAINCODE_2011, NRMR_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa1.nrmr)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA1 in POA
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[12]
-print(corr_file) # POA
-corr <- read_csv(corr_file)
-asgs.sa1.poa <- corr %>%
-    select(SA1_MAINCODE_2011, POA_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa1.poa)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA1 in RA
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[13]
-print(corr_file) # RA
-corr <- read_csv(corr_file)
-asgs.sa1.ra <- corr %>%
-    select(SA1_MAINCODE_2011, RA_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa1.ra)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA1 in UCL, SOSR, SOS
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[14]
-print(corr_file) # UCL, SOSR, SOS
-corr <- read_csv(corr_file)
-asgs.sa1.ucl_sosr_sos <- corr %>%
-    select(SA1_MAINCODE_2011, UCL_CODE_2011, SOSR_CODE_2011, SOS_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa1.ucl_sosr_sos)
-
-#-----------------------------------------------------------------------------
-# Allocation of SA2 in SUA
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[15]
-print(corr_file)
-corr <- read_csv(corr_file)
-asgs.sa2.sua <- corr %>%
-    select(SA2_MAINCODE_2011, SUA_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa2.sua)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA1 in SED
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[16]
-print(corr_file)
-corr <- read_csv(corr_file)
-asgs.sa1.sed <- corr %>%
-    select(SA2_MAINCODE_2011, SED_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa1.sed)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA1 in SED
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[17]
-print(corr_file)
-corr <- read_csv(corr_file)
-asgs.sa1.ssc <- corr %>%
-    select(SA1_MAINCODE_2011, SSC_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa1.ssc)
-
-
-#-----------------------------------------------------------------------------
-# Allocation of SA1 in SED
-#-----------------------------------------------------------------------------
-corr_file <- corr_files[19]
+corr_file <- list.files(corr_dir, pattern='TR_', full.names = TRUE)
 print(corr_file)
 corr <- read_csv(corr_file)
 asgs.sa2.tr <- corr %>%
@@ -214,33 +145,61 @@ asgs.sa2.tr <- corr %>%
     mutate(TR_Code_2011 = as.factor(TR_Code_2011))
 pryr::object_size(asgs.sa2.tr)
 
+#-----------------------------------------------------------------------------
+# Allocation of SA2 in SUA
+#-----------------------------------------------------------------------------
+corr_file <- list.files(corr_dir, pattern='SA2_SUA_', full.names = TRUE)
+print(corr_file)
+corr <- read_csv(corr_file)
+asgs.sa2.sua <- corr %>%
+    select(SA2_MAINCODE_2011, SUA_CODE_2011) %>%
+    distinct
+pryr::object_size(asgs.sa2.sua)
 
-
-#=============================================================================
-# Merge SA1 allocations
-#=============================================================================
-sa1_allocations <- list(asgs.sa1.sa2, asgs.sa1.ssc, asgs.sa1.ced,
-                        asgs.sa1.ucl_sosr_sos, asgs.sa1.ra,
-                        asgs.sa1.poa, asgs.sa1.nrmr)
-
-asgs.sa1 <- Reduce(dplyr::left_join, sa1_allocations)
-pryr::object_size(asgs.sa1)
-
-
-#=============================================================================
+#-----------------------------------------------------------------------------
 # Merge SA2 allocations
-#=============================================================================
+#-----------------------------------------------------------------------------s
 sa2_allocations <- list(asgs.sa2.sa3, asgs.sa2.tr, asgs.sa2.sua)
 
 asgs.sa2 <- Reduce(dplyr::left_join, sa2_allocations)
 pryr::object_size(asgs.sa2)
 dim(asgs.sa2)
 
+save(asgs.sa2, file="../data/asgs.sa2.rda", compress='bzip2')
+
+
 
 #=============================================================================
-# Merge MB allocations
+#
+# SA3 Allocation
+#
 #=============================================================================
-asgs.mb <- dplyr::left_join(asgs.mb.sa1, asgs.mb.lga)
-pryr::object_size(asgs.mb)
-dim(asgs.mb)
+#-----------------------------------------------------------------------------
+# Allocation of SA3 in SA4
+#-----------------------------------------------------------------------------
+asgs.sa3 <- mb %>%
+    select(SA3_CODE_2011, SA4_CODE_2011) %>%
+    distinct
+pryr::object_size(asgs.sa3)
+
+save(asgs.sa3, file="../data/asgs.sa3.rda", compress='bzip2')
+
+
+
+#=============================================================================
+#
+# SA4 Allocation
+#
+#=============================================================================
+#-----------------------------------------------------------------------------
+# Allocation of SA4 in GCCSA
+#-----------------------------------------------------------------------------
+asgs.sa4 <- mb %>%
+    select(SA4_CODE_2011, GCCSA_CODE_2011, STATE_CODE_2011) %>%
+    distinct
+pryr::object_size(asgs.sa4)
+
+save(asgs.sa4, file="../data/asgs.sa4.rda", compress='bzip2')
+
+
 
