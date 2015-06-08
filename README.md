@@ -11,8 +11,8 @@ Geography Home
 ==============
 
 * [ABS Geography homepage](http://www.abs.gov.au/websitedbs/D3310114.nsf/home/Geography)
-* [Index of all the ABS Geography Publications](http://www.abs.gov.au/websitedbs/D3310114.nsf/home/ABS+Geography+Publications]
-* [ABS Betaworks visualisation tool for ASGS boundaries) (http://betaworks.abs.gov.au/betaworks/betaworks.nsf/dx/asgs-boundaries-online.htm)
+* [Index of all the ABS Geography Publications](http://www.abs.gov.au/websitedbs/D3310114.nsf/home/ABS+Geography+Publications)
+* [ABS Betaworks visualisation tool for ASGS boundaries](http://betaworks.abs.gov.au/betaworks/betaworks.nsf/dx/asgs-boundaries-online.htm)
 * `ABS2011/Correspondences` [1270.0.55.006 - Australian Statistical Geography Standard (ASGS): Correspondences, July 2011](http://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.006July%202011?OpenDocument)  
 
 Australian Statistical Geography Standard
