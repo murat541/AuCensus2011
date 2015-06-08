@@ -61,7 +61,12 @@ pryr::object_size(asgs.mb.sa1)
 #-----------------------------------------------------------------------------
 asgs.mb <- dplyr::left_join(asgs.mb.sa1, asgs.mb.lga)
 pryr::object_size(asgs.mb)
-dim(asgs.mb)
+
+asgs.mb %<>% rename(MB_CODE11  = MB_CODE_2011,
+                    MB_CAT11   = MB_CATEGORY_2011,
+                    SA1_MAIN11 = SA1_MAINCODE_2011,
+                    SA1_7DIG11 = SA1_7DIGITCODE_2011,
+                    LGA_CODE11 = LGA_CODE_2011)
 
 save(asgs.mb, file="../data/asgs.mb.rda", compress='bzip2')
 
@@ -117,6 +122,20 @@ asgs.sa1 <- Reduce(dplyr::left_join, sa1_allocations) %>%
 pryr::object_size(asgs.sa1)
 
 
+asgs.sa1 %<>% rename(SA1_MAIN11 = SA1_MAINCODE_2011,
+                     SA1_7DIG11 = SA1_7DIGITCODE_2011,
+                     SA2_MAIN11 = SA2_MAINCODE_2011,
+                     SA2_5DIG11 = SA2_5DIGITCODE_2011,
+                     CED_CODE   = CED_CODE_2011,
+                     NRMR_CODE  = NRMR_CODE_2011,
+                     POA_CODE   = POA_CODE_2011,
+                     RA_CODE11  = RA_CODE_2011,
+                     UCL_CODE11 = UCL_CODE_2011,
+                     SSR_CODE11 = SOSR_CODE_2011,
+                     SOS_CODE11 = SOS_CODE_2011,
+                     SED_CODE   = SED_CODE_2011,
+                     SSC_CODE   = SSC_CODE_2011)
+
 save(asgs.sa1, file="../data/asgs.sa1.rda", compress='bzip2')
 
 
@@ -165,6 +184,14 @@ asgs.sa2 <- Reduce(dplyr::left_join, sa2_allocations)
 pryr::object_size(asgs.sa2)
 dim(asgs.sa2)
 
+
+asgs.sa2 %<>% rename(SA2_MAIN11 = SA2_MAINCODE_2011,
+                     SA2_5DIG11 = SA2_5DIGITCODE_2011,
+                     SA3_CODE11 = SA3_CODE_2011,
+                     TR_CODE11  = TR_Code_2011,
+                     SUA_CODE11 = SUA_CODE_2011)
+
+
 save(asgs.sa2, file="../data/asgs.sa2.rda", compress='bzip2')
 
 
@@ -182,6 +209,9 @@ asgs.sa3 <- mb %>%
     distinct
 pryr::object_size(asgs.sa3)
 
+asgs.sa3 %<>% rename(SA3_CODE11 = SA3_CODE_2011,
+                     SA4_CODE11 = SA4_CODE_2011)
+
 save(asgs.sa3, file="../data/asgs.sa3.rda", compress='bzip2')
 
 
@@ -198,6 +228,10 @@ asgs.sa4 <- mb %>%
     select(SA4_CODE_2011, GCCSA_CODE_2011, STATE_CODE_2011) %>%
     distinct
 pryr::object_size(asgs.sa4)
+
+asgs.sa4 %<>% rename(SA4_CODE11 = SA4_CODE_2011,
+                     GCC_CODE11 = GCCSA_CODE_2011,
+                     STE_CODE11 = STATE_CODE_2011)
 
 save(asgs.sa4, file="../data/asgs.sa4.rda", compress='bzip2')
 
