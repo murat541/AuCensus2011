@@ -20,3 +20,4 @@ data-raw/*.html
 data-raw/*.pdf
 
 *#
+*.xz
