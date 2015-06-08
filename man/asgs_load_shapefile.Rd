@@ -5,7 +5,7 @@
 \title{Load an ASGS shapefile}
 \usage{
 asgs_load_shapefile(level, shapefiles_dir = paste0(Sys.getenv("HOME"),
-  "/projectsdata/ABS2011/ESRI-Shapefile/"))
+  "/projectsdata/ABS2011/ASGS/"))
 }
 \arguments{
 \item{level}{Structure level e.g. GCCSA, SSC, POA etc}

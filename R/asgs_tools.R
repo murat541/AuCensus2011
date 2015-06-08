@@ -3,6 +3,31 @@ if (FALSE) {
     library(foreach)
 }
 
+asgs.volume.info <- list(
+    'GCCSA' = list(volume="1270055001"),
+    'SA1'   = list(volume="1270055001"),
+    'SA2'   = list(volume="1270055001"),
+    'SA3'   = list(volume="1270055001"),
+    'SA4'   = list(volume="1270055001"),
+    'STE'   = list(volume="1270055001"),
+    'IARE'  = list(volume="1270055002"),
+    'ILOC'  = list(volume="1270055002"),
+    'IREG'  = list(volume="1270055002"),
+    'ADD'   = list(volume="1270055003"),
+    'CED'   = list(volume="1270055003"),
+    'LGA'   = list(volume="1270055003"),
+    'NRMR'  = list(volume="1270055003"),
+    'POA'   = list(volume="1270055003"),
+    'SED'   = list(volume="1270055003"),
+    'SSC'   = list(volume="1270055003"),
+    'TR'    = list(volume="1270055003"),
+    'SOS'   = list(volume="1270055004"),
+    'SOSR'  = list(volume="1270055004"),
+    'SUA'   = list(volume="1270055004"),
+    'UCL'   = list(volume="1270055004"),
+    'RA'    = list(volume="1270055005")
+)
+
 #' Load an ASGS shapefile
 #'
 #' Load an ASGS shapefile supplied by the ABS
@@ -14,20 +39,20 @@ if (FALSE) {
 #' @param shapefiles_dir location of shapefile directories
 #' @return ASGS shapefile (SpatialPolygonsDataFrame)
 #'
-asgs_load_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'), "/projectsdata/ABS2011/ESRI-Shapefile/")) {
-    # dsn name e.g. "2011_GCCSA_shape", layer name = "GCCSA_2011_AUST"
-    dsn   <- paste0(shapefiles_dir, "2011_", level, "_shape/")
+asgs_load_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'), "/projectsdata/ABS2011/ASGS/")) {
+    level    <- toupper(level)
+    stopifnot(level %in% names(asgs.volume.info))
+    level_lc <- tolower(level)
+    info     <- asgs.volume.info[[level]]
+    dsn   <- paste0(shapefiles_dir, info$volume, '_', level_lc, '_2011_aust_shape')
     layer <- paste0(level, "_2011_AUST")
-    message(paste("Loading DSN:", dsn, "Layer:", layer))
+    message(paste("Loading DSN: ", dsn, "/", layer, sep=""))
 
     boundaries <- NULL
     boundaries <- rgdal::readOGR(dsn, layer)
-
-    # change name to region_id so that we can merge with ABS data.
-    colnames(boundaries@data)[1] <- 'region_id'
-
     boundaries
 }
+
 
 #' Extract a named region from an ASGS shapefile
 #'
