@@ -51,10 +51,29 @@ read_asgs_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'),
     boundaries <- NULL
     boundaries <- rgdal::readOGR(dsn, layer)
 
-    # Make the CODE column NOT a factor
-    boundaries@data[[1]] <- as.integer(levels(boundaries@data[[1]])[boundaries@data[[1]]])
+    convert_to_numeric_if_appropriate <- function(x) {
+        if (!is.factor(x)) {
+            return(x)
+        }
+        if (all(!is.na(as.numeric(levels(x))))) {
+            tmp <- as.numeric(levels(x))[x]
+            maxint <- 2^31 - 1
+            if (max(tmp) > maxint) {
+                return(tmp)
+            } else {
+                return(as.integer(tmp))
+            }
+        }
+        return(x)
+    }
 
-    boundaries
+    for (col in colnames(boundaries@data)) {
+        suppressWarnings({
+            boundaries@data[[col]] <- convert_to_numeric_if_appropriate(boundaries@data[[col]])
+        })
+    }
+
+    invisible(boundaries)
 }
 
 
