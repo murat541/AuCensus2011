@@ -130,45 +130,36 @@ asgs_get_all_spcentroids <- function(boundaries) {
 }
 
 
-if (FALSE) {
+#' Simplify ASGS data
+#'
+#' Simplify ASGS data
+#'
+#' Simplify ASGS data
+#'
+#' @export
+#' @param boundaries ASGS shapefile (SpatialPolygonsDataFrame)
+#' @param simplification_tolerance higher numbers mean more simplification
+#' @param preserve_topology preserve topology
+#' @return SpatialPolygonsDataFrame of simplified region
+asgs_simplify_boundaries <- function(boundaries, simplification_tolerance = 0.01, preserve_topology=TRUE) {
+    # On STE data.
+    # Original    => 35.33069 MB
+    # tol = 0     => 36.46082 MB
+    # tol = 0.001 =>  9.61164 MB
+    # tol = 0.01  =>  8.44506 MB
+    # tol = 0.1   =>  8.26605 MB
+    # tol = 1.0   =>  8.24477 MB
+    # tol = 10    =>  7.93640 MB
+    # system.time(simplify_shape(boundaries, simplification_tolerance = 10))
+    print("Simplifying...")
+    # Must preserve topology while simplifying otherwise some polygons get removed
+    # which means that re-merging into SpatialPolygonsDataFrame fails
+    simpler.polygons   <- rgeos::gSimplify(boundaries, tol = simplification_tolerance, topologyPreserve=preserve_topology)
+    simpler.boundaries <- sp::SpatialPolygonsDataFrame(simpler.polygons, boundaries@data)
 
-    states    <- read_asgs_shapefile(level='STE')
-    suburbs   <- read_asgs_shapefile(level='SSC')
-    postcodes <- read_asgs_shapefile(level='POA')
-    gccsas    <- read_asgs_shapefile(level='GCCSA')
-    sa3       <- read_asgs_shapefile(level='SA3')
-    sa1       <- read_asgs_shapefile(level='SA1')
+    cat("      Full boundary:", as.numeric(pryr::object_size(        boundaries)) / 1e6, "MB\n")
+    cat("Simplified boundary:", as.numeric(pryr::object_size(simpler.boundaries)) / 1e6, "MB\n")
 
-
-    parent_region <- gccsas
-    child_region  <- suburbs
-
-    system.time({
-        # suburbs = 43s
-        child_centroids <- asgs_get_all_spcentroids(child_region)
-    })
-
-    system.time({
-        # suburbs in gccsas = 200s
-        res <- rgeos::gContains(parent_region, child_region, byid=TRUE, returnDense=TRUE)
-    })
-    colnames(res) <- parent_region[[2]]
-    rownames(res) <- child_region[[2]]
-    head(res)
-
-    # There should only be a single truth value per row
-    # e.g. a suburb can only be in a single state.
-    Nparents <- apply(res, 1, sum)
-
-    if (all(Nparents != 1)) {
-        bad <- which(Nparents != 1)
-        Nparents[bad]
-        res[bad,] %>% head
-
-    }
-
-    apply(res, 1, . %>% which %>% colnames(res)[[.]])
-
-
+    invisible(simpler.boundaries)
 }
 

@@ -4,6 +4,8 @@ library(magrittr)
 library(dplyr)
 library(readr)
 
+# Create: asgs.mb.alloc and asgs.sa1.alloc
+
 #-----------------------------------------------------------------------------
 # Allocation tables: http://www.abs.gov.au/ausstats/abs@.nsf/Latestproducts/1216.0.55.004Main%20Features52012?opendocument&tabname=Summary&prodno=1216.0.55.004&issue=2012&num=&view=
 # "Allocation tables, also known as hierarchy tables, describe a hierarchy of regions where the smaller regions fit precisely within the larger regions"
