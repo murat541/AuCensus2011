@@ -20,5 +20,6 @@ Imports:
     foreach,
     rgdal,
     rgeos,
-    pryr
+    pryr,
+    stringr
 

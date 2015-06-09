@@ -73,8 +73,11 @@ read_abs <- function(profile, table, level, long=TRUE) {
             dplyr::mutate(colname = as.factor(as.character(colname)))
     }
 
-    # region_id needs to be 'character' to be able to merge with 'region.descriptions'
-    df <- df %>% dplyr::mutate(region_id = as.factor(as.character(region_id)))
+    # Some codes redundantly have the level name as prefix, but nobody else does! So remove...
+    code_replacer <- c('CED', 'LGA', 'POA', 'RA', 'SED', 'SOS', 'SOSR', 'SSC', 'UCL')
+    if (level %in% code_replacer) {
+        df$region_id <- as.integer(stringr::str_replace(df$region_id, as.character(level), ''))
+    }
 
     if (level %in% asgs.info$level) {
         # Then we'll recode the region_id column to match the level name in the
@@ -82,6 +85,7 @@ read_abs <- function(profile, table, level, long=TRUE) {
         code_name <- asgs.info$code_name[asgs.info$level == level]
         colnames(df)[1] <- code_name
     }
+
 
     df
 }

@@ -31,7 +31,7 @@ darwin    <- list(latmax=-12.32 , lonmin=130.80,latmin=-12.48,lonmax=130.91)
 
 this_level <- 'SSC'
 
-b46 <- AuCensus2011::read_abs("BCP", "B02", this_level, long=TRUE) %>% inner_join(AuCensus2011::split.variables[['B46']]) %>%
+b46 <- AuCensus2011::read_abs("BCP", "B46", this_level, long=TRUE) %>% inner_join(AuCensus2011::split.variables[['B46']]) %>%
     filter(gender == 'Persons') %>%
     select(SSC_CODE, count, method_count, method)
 
@@ -49,7 +49,6 @@ cycled %<>% inner_join(total) %>% mutate(cycled = 100 * Bicycle / (Total - Did_n
 # Load the boundaries file
 #-----------------------------------------------------------------------------
 boundaries <- AuCensus2011::read_asgs_shapefile(level=this_level)
-orig.boundaries <- boundaries
 
 
 #-----------------------------------------------------------------------------

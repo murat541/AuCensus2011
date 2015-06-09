@@ -50,6 +50,10 @@ read_asgs_shapefile <- function(level, shapefiles_dir=paste0(Sys.getenv('HOME'),
 
     boundaries <- NULL
     boundaries <- rgdal::readOGR(dsn, layer)
+
+    # Make the CODE column NOT a factor
+    boundaries@data[[1]] <- as.integer(levels(boundaries@data[[1]])[boundaries@data[[1]]])
+
     boundaries
 }
 
