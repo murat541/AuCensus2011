@@ -27,13 +27,6 @@ mb <- foreach(mb_file=mb_files, .combine=rbind) %do% {
 }
 pryr::object_size(mb)
 
-# Delete redundant NAME columns (get these from asgs.code)
-mb <- mb %>% select(MB_CODE_2011, MB_CATEGORY_2011, SA1_MAINCODE_2011, SA1_7DIGITCODE_2011,
-                    SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, SA3_CODE_2011, SA4_CODE_2011,
-                    GCCSA_CODE_2011, STATE_CODE_2011) %>%
-    mutate(MB_CATEGORY_2011 = as.factor(MB_CATEGORY_2011),
-           GCCSA_CODE_2011  = as.factor(GCCSA_CODE_2011))
-pryr::object_size(mb)
 
 #-----------------------------------------------------------------------------
 # Allocation of MB in LGA
@@ -67,9 +60,11 @@ asgs.mb %<>% rename(MB_CODE11  = MB_CODE_2011,
                     MB_CAT11   = MB_CATEGORY_2011,
                     SA1_MAIN11 = SA1_MAINCODE_2011,
                     SA1_7DIG11 = SA1_7DIGITCODE_2011,
-                    LGA_CODE11 = LGA_CODE_2011)
+                    LGA_CODE11 = LGA_CODE_2011,
+                    LGA_NAME11 = LGA_NAME_2011) %>%
+    mutate(MB_CAT11 = as.factor(MB_CAT11))
 
-save(asgs.mb, file="../data/asgs.mb.rda", compress='bzip2')
+save(asgs.mb, file="../data/asgs.mb.rda", compress='xz')
 
 
 
@@ -83,7 +78,7 @@ save(asgs.mb, file="../data/asgs.mb.rda", compress='bzip2')
 # Allocation of SA1 in SA2 (from MeshBlock file)
 #-----------------------------------------------------------------------------
 asgs.sa1.sa2 <- mb %>%
-    select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011) %>%
+    select(-MB_CODE_2011, -MB_CATEGORY_2011, -AREA_ALBERS_SQM) %>%
     distinct
 pryr::object_size(asgs.sa1.sa2)
 
@@ -96,7 +91,7 @@ sa1 <- list(
     POA  = list(pattern='POA_*', columns=c( 'POA_CODE_2011' ,  'POA_NAME_2011')),
     RA   = list(pattern='RA_*' , columns=c(  'RA_CODE_2011' ,   'RA_NAME_2011')),
     UCL  = list(pattern='SOSR*', columns=c( "UCL_CODE_2011" ,  'UCL_NAME_2011',
-                                           "SOSR_CODE_2011" , 'SOSR_NAME_2011',
+                                            "SOSR_CODE_2011" , 'SOSR_NAME_2011',
                                             "SOS_CODE_2011" ,  'SOS_NAME_2011')),
     SED  = list(pattern='SED_*', columns=c( 'SED_CODE_2011' ,  'SED_NAME_2011')),
     SSC  = list(pattern='SSC_*', columns=c( 'SSC_CODE_2011' ,  'SSC_NAME_2011'))
@@ -116,56 +111,9 @@ sa1_allocations <- foreach(level=names(sa1)) %do% {
     tmp
 }
 
-#-----------------------------------------------------------------------------
-# Merge SA1 allocations
-#-----------------------------------------------------------------------------
-sa1_allocations[['SA2']] <- asgs.sa1.sa2
-asgs.sa1 <- Reduce(dplyr::left_join, sa1_allocations) %>%
-    select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, everything()) %>%
-    mutate(CED_NAME_2011  = as.factor(CED_NAME_2011),
-           NRMR_NAME_2011 = as.factor(NRMR_NAME_2011),
-           POA_NAME_2011  = as.factor(POA_NAME_2011),
-           RA_NAME_2011   = as.factor(RA_NAME_2011),
-           UCL_NAME_2011  = as.factor(UCL_NAME_2011),
-           SOSR_NAME_2011 = as.factor(SOSR_NAME_2011),
-           SOS_NAME_2011  = as.factor(SOS_NAME_2011),
-           SED_NAME_2011  = as.factor(SED_NAME_2011),
-           SSC_NAME_2011  = as.factor(SSC_NAME_2011))
-pryr::object_size(asgs.sa1)
-
-
-asgs.sa1 %<>% rename(SA1_MAIN11 = SA1_MAINCODE_2011,
-                     SA1_7DIG11 = SA1_7DIGITCODE_2011,
-                     SA2_MAIN11 = SA2_MAINCODE_2011,
-                     SA2_5DIG11 = SA2_5DIGITCODE_2011,
-                     CED_CODE   = CED_CODE_2011,
-                     NRMR_CODE  = NRMR_CODE_2011,
-                     POA_CODE   = POA_CODE_2011,
-                     RA_CODE11  = RA_CODE_2011,
-                     UCL_CODE11 = UCL_CODE_2011,
-                     SSR_CODE11 = SOSR_CODE_2011,
-                     SOS_CODE11 = SOS_CODE_2011,
-                     SED_CODE   = SED_CODE_2011,
-                     SSC_CODE   = SSC_CODE_2011)
-
-save(asgs.sa1, file="../data/asgs.sa1.rda", compress='bzip2')
-
-
-#=============================================================================
-#
-# SA2 Allocation
-#
-#=============================================================================
-#-----------------------------------------------------------------------------
-# Allocation of SA2 in SA3
-#-----------------------------------------------------------------------------
-asgs.sa2.sa3 <- mb %>%
-    select(SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, SA3_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa2.sa3)
 
 #-----------------------------------------------------------------------------
-# Allocation of SA2 in SED
+# Allocation of SA2 in TR
 #-----------------------------------------------------------------------------
 corr_file <- list.files(corr_dir, pattern='TR_', full.names = TRUE)
 print(corr_file)
@@ -173,8 +121,8 @@ corr <- read_csv(corr_file)
 asgs.sa2.tr <- corr %>%
     select(SA2_MAINCODE_2011, TR_Code_2011, TR_Name_2011) %>%
     distinct %>%
-    mutate(TR_Code_2011 = as.factor(TR_Code_2011),
-           TR_Name_2011 = as.factor(TR_Name_2011))
+    rename(TR_CODE11  = TR_Code_2011,
+           TR_NAME11  = TR_Name_2011)
 pryr::object_size(asgs.sa2.tr)
 
 #-----------------------------------------------------------------------------
@@ -186,69 +134,63 @@ corr <- read_csv(corr_file)
 asgs.sa2.sua <- corr %>%
     select(SA2_MAINCODE_2011, SUA_CODE_2011, SUA_NAME_2011) %>%
     distinct %>%
-    mutate(SUA_NAME_2011 = as.factor(SUA_NAME_2011))
+    rename(SUA_CODE11 = SUA_CODE_2011,
+           SUA_NAME11 = SUA_NAME_2011)
 pryr::object_size(asgs.sa2.sua)
 
+
+
 #-----------------------------------------------------------------------------
-# Merge SA2 allocations
-#-----------------------------------------------------------------------------s
-sa2_allocations <- list(asgs.sa2.sa3, asgs.sa2.tr, asgs.sa2.sua)
-
-asgs.sa2 <- Reduce(dplyr::left_join, sa2_allocations)
-pryr::object_size(asgs.sa2)
-dim(asgs.sa2)
-
-
-asgs.sa2 %<>% rename(SA2_MAIN11 = SA2_MAINCODE_2011,
-                     SA2_5DIG11 = SA2_5DIGITCODE_2011,
-                     SA3_CODE11 = SA3_CODE_2011,
-                     TR_CODE11  = TR_Code_2011,
-                     TR_NAME11  = TR_Name_2011,
-                     SUA_CODE11 = SUA_CODE_2011)
-
-
-save(asgs.sa2, file="../data/asgs.sa2.rda", compress='bzip2')
-
-
-
-#=============================================================================
-#
-# SA3 Allocation
-#
-#=============================================================================
+# Merge SA1 allocations
 #-----------------------------------------------------------------------------
-# Allocation of SA3 in SA4
-#-----------------------------------------------------------------------------
-asgs.sa3 <- mb %>%
-    select(SA3_CODE_2011, SA4_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa3)
-
-asgs.sa3 %<>% rename(SA3_CODE11 = SA3_CODE_2011,
-                     SA4_CODE11 = SA4_CODE_2011)
-
-save(asgs.sa3, file="../data/asgs.sa3.rda", compress='bzip2')
+sa1_allocations[['SA2']] <- asgs.sa1.sa2
+sa1_allocations[['TR' ]] <- asgs.sa2.tr
+sa1_allocations[['SUA']] <- asgs.sa2.sua
+asgs.sa1 <- Reduce(dplyr::left_join, sa1_allocations)
+pryr::object_size(asgs.sa1)
 
 
+asgs.sa1 <- asgs.sa1 %>%
+    select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, everything()) %>%
+    rename(SA1_MAIN11 = SA1_MAINCODE_2011,
+           SA1_7DIG11 = SA1_7DIGITCODE_2011,
+           SA2_MAIN11 = SA2_MAINCODE_2011,
+           SA2_5DIG11 = SA2_5DIGITCODE_2011,
+           CED_CODE   = CED_CODE_2011,
+           CED_NAME   = CED_NAME_2011,
+           NRMR_CODE  = NRMR_CODE_2011,
+           NRMR_NAME  = NRMR_NAME_2011,
+           POA_CODE   = POA_CODE_2011,
+           POA_NAME   = POA_NAME_2011,
+           RA_CODE11  = RA_CODE_2011,
+           RA_NAME11  = RA_NAME_2011,
+           UCL_CODE11 = UCL_CODE_2011,
+           UCL_NAME11 = UCL_NAME_2011,
+           SSR_CODE11 = SOSR_CODE_2011,
+           SSR_NAME11 = SOSR_NAME_2011,
+           SOS_CODE11 = SOS_CODE_2011,
+           SOS_NAME11 = SOS_NAME_2011,
+           SED_CODE   = SED_CODE_2011,
+           SED_NAME   = SED_NAME_2011,
+           SSC_CODE   = SSC_CODE_2011,
+           SSC_NAME   = SSC_NAME_2011,
+           GCC_CODE11 = GCCSA_CODE_2011,
+           GCC_NAME11 = GCCSA_NAME_2011,
+           STE_CODE11 = STATE_CODE_2011,
+           STE_NAME11 = STATE_NAME_2011,
+           SA2_NAME11 = SA2_NAME_2011,
+           SA3_CODE11 = SA3_CODE_2011,
+           SA3_NAME11 = SA3_NAME_2011,
+           SA4_CODE11 = SA4_CODE_2011,
+           SA4_NAME11 = SA4_NAME_2011)
 
-#=============================================================================
-#
-# SA4 Allocation
-#
-#=============================================================================
-#-----------------------------------------------------------------------------
-# Allocation of SA4 in GCCSA
-#-----------------------------------------------------------------------------
-asgs.sa4 <- mb %>%
-    select(SA4_CODE_2011, GCCSA_CODE_2011, STATE_CODE_2011) %>%
-    distinct
-pryr::object_size(asgs.sa4)
+# Turn all the NAME columns into factors
+name_names <- colnames(asgs.sa1)[grepl('NAME', colnames(asgs.sa1))]
+name_names <- c(name_names, 'GCC_CODE11')
+for (name in name_names) {
+    asgs.sa1[[name]] <- as.factor(asgs.sa1[[name]])
+}
 
-asgs.sa4 %<>% rename(SA4_CODE11 = SA4_CODE_2011,
-                     GCC_CODE11 = GCCSA_CODE_2011,
-                     STE_CODE11 = STATE_CODE_2011)
-
-save(asgs.sa4, file="../data/asgs.sa4.rda", compress='bzip2')
-
+save(asgs.sa1, file="../data/asgs.sa1.rda", compress='xz')
 
 
