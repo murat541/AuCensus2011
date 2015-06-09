@@ -44,8 +44,9 @@ corr <- foreach(corr_file=lga_corr_files, .combine=rbind) %do% {
     read_csv(corr_file)
 }
 asgs.mb.lga <- corr %>%
-    select(MB_CODE_2011, LGA_CODE_2011) %>%
-    distinct
+    select(MB_CODE_2011, LGA_CODE_2011, LGA_NAME_2011) %>%
+    distinct %>%
+    mutate(LGA_NAME_2011 = as.factor(LGA_NAME_2011))
 pryr::object_size(asgs.mb.lga)
 
 #-----------------------------------------------------------------------------
@@ -90,13 +91,15 @@ pryr::object_size(asgs.sa1.sa2)
 # Allocation of SA1
 #-----------------------------------------------------------------------------
 sa1 <- list(
-    CED  = list(pattern='CED_*', columns='CED_CODE_2011'),
-    NRMR = list(pattern='NRMR*', columns='NRMR_CODE_2011'),
-    POA  = list(pattern='POA_*', columns='POA_CODE_2011'),
-    RA   = list(pattern='RA_*' , columns='RA_CODE_2011'),
-    UCL  = list(pattern='SOSR*', columns=c("UCL_CODE_2011", "SOSR_CODE_2011", "SOS_CODE_2011")),
-    SED  = list(pattern='SED_*', columns='SED_CODE_2011'),
-    SSC  = list(pattern='SSC_*', columns='SSC_CODE_2011')
+    CED  = list(pattern='CED_*', columns=c( 'CED_CODE_2011' ,  'CED_NAME_2011')),
+    NRMR = list(pattern='NRMR*', columns=c('NRMR_CODE_2011' , 'NRMR_NAME_2011')),
+    POA  = list(pattern='POA_*', columns=c( 'POA_CODE_2011' ,  'POA_NAME_2011')),
+    RA   = list(pattern='RA_*' , columns=c(  'RA_CODE_2011' ,   'RA_NAME_2011')),
+    UCL  = list(pattern='SOSR*', columns=c( "UCL_CODE_2011" ,  'UCL_NAME_2011',
+                                           "SOSR_CODE_2011" , 'SOSR_NAME_2011',
+                                            "SOS_CODE_2011" ,  'SOS_NAME_2011')),
+    SED  = list(pattern='SED_*', columns=c( 'SED_CODE_2011' ,  'SED_NAME_2011')),
+    SSC  = list(pattern='SSC_*', columns=c( 'SSC_CODE_2011' ,  'SSC_NAME_2011'))
 )
 
 level <- 'SSC'
@@ -118,7 +121,16 @@ sa1_allocations <- foreach(level=names(sa1)) %do% {
 #-----------------------------------------------------------------------------
 sa1_allocations[['SA2']] <- asgs.sa1.sa2
 asgs.sa1 <- Reduce(dplyr::left_join, sa1_allocations) %>%
-    select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, everything())
+    select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, everything()) %>%
+    mutate(CED_NAME_2011  = as.factor(CED_NAME_2011),
+           NRMR_NAME_2011 = as.factor(NRMR_NAME_2011),
+           POA_NAME_2011  = as.factor(POA_NAME_2011),
+           RA_NAME_2011   = as.factor(RA_NAME_2011),
+           UCL_NAME_2011  = as.factor(UCL_NAME_2011),
+           SOSR_NAME_2011 = as.factor(SOSR_NAME_2011),
+           SOS_NAME_2011  = as.factor(SOS_NAME_2011),
+           SED_NAME_2011  = as.factor(SED_NAME_2011),
+           SSC_NAME_2011  = as.factor(SSC_NAME_2011))
 pryr::object_size(asgs.sa1)
 
 
@@ -159,9 +171,10 @@ corr_file <- list.files(corr_dir, pattern='TR_', full.names = TRUE)
 print(corr_file)
 corr <- read_csv(corr_file)
 asgs.sa2.tr <- corr %>%
-    select(SA2_MAINCODE_2011, TR_Code_2011) %>%
+    select(SA2_MAINCODE_2011, TR_Code_2011, TR_Name_2011) %>%
     distinct %>%
-    mutate(TR_Code_2011 = as.factor(TR_Code_2011))
+    mutate(TR_Code_2011 = as.factor(TR_Code_2011),
+           TR_Name_2011 = as.factor(TR_Name_2011))
 pryr::object_size(asgs.sa2.tr)
 
 #-----------------------------------------------------------------------------
@@ -171,8 +184,9 @@ corr_file <- list.files(corr_dir, pattern='SA2_SUA_', full.names = TRUE)
 print(corr_file)
 corr <- read_csv(corr_file)
 asgs.sa2.sua <- corr %>%
-    select(SA2_MAINCODE_2011, SUA_CODE_2011) %>%
-    distinct
+    select(SA2_MAINCODE_2011, SUA_CODE_2011, SUA_NAME_2011) %>%
+    distinct %>%
+    mutate(SUA_NAME_2011 = as.factor(SUA_NAME_2011))
 pryr::object_size(asgs.sa2.sua)
 
 #-----------------------------------------------------------------------------
@@ -189,6 +203,7 @@ asgs.sa2 %<>% rename(SA2_MAIN11 = SA2_MAINCODE_2011,
                      SA2_5DIG11 = SA2_5DIGITCODE_2011,
                      SA3_CODE11 = SA3_CODE_2011,
                      TR_CODE11  = TR_Code_2011,
+                     TR_NAME11  = TR_Name_2011,
                      SUA_CODE11 = SUA_CODE_2011)
 
 
