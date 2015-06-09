@@ -53,18 +53,18 @@ pryr::object_size(asgs.mb.sa1)
 #   - MB -> SA1
 #   - MB -> LGA
 #-----------------------------------------------------------------------------
-asgs.mb <- dplyr::left_join(asgs.mb.sa1, asgs.mb.lga)
-pryr::object_size(asgs.mb)
+asgs.mb.alloc <- dplyr::left_join(asgs.mb.sa1, asgs.mb.lga)
+pryr::object_size(asgs.mb.alloc)
 
-asgs.mb %<>% rename(MB_CODE11  = MB_CODE_2011,
-                    MB_CAT11   = MB_CATEGORY_2011,
-                    SA1_MAIN11 = SA1_MAINCODE_2011,
-                    SA1_7DIG11 = SA1_7DIGITCODE_2011,
-                    LGA_CODE11 = LGA_CODE_2011,
-                    LGA_NAME11 = LGA_NAME_2011) %>%
+asgs.mb.alloc %<>% rename(MB_CODE11  = MB_CODE_2011,
+                          MB_CAT11   = MB_CATEGORY_2011,
+                          SA1_MAIN11 = SA1_MAINCODE_2011,
+                          SA1_7DIG11 = SA1_7DIGITCODE_2011,
+                          LGA_CODE11 = LGA_CODE_2011,
+                          LGA_NAME11 = LGA_NAME_2011) %>%
     mutate(MB_CAT11 = as.factor(MB_CAT11))
 
-save(asgs.mb, file="../data/asgs.mb.rda", compress='xz')
+save(asgs.mb.alloc, file="../data/asgs.mb.alloc.rda", compress='xz')
 
 
 
@@ -146,11 +146,11 @@ pryr::object_size(asgs.sa2.sua)
 sa1_allocations[['SA2']] <- asgs.sa1.sa2
 sa1_allocations[['TR' ]] <- asgs.sa2.tr
 sa1_allocations[['SUA']] <- asgs.sa2.sua
-asgs.sa1 <- Reduce(dplyr::left_join, sa1_allocations)
-pryr::object_size(asgs.sa1)
+asgs.sa1.alloc <- Reduce(dplyr::left_join, sa1_allocations)
+pryr::object_size(asgs.sa1.alloc)
 
 
-asgs.sa1 <- asgs.sa1 %>%
+asgs.sa1.alloc <- asgs.sa1.alloc %>%
     select(SA1_MAINCODE_2011, SA1_7DIGITCODE_2011, SA2_MAINCODE_2011, SA2_5DIGITCODE_2011, everything()) %>%
     rename(SA1_MAIN11 = SA1_MAINCODE_2011,
            SA1_7DIG11 = SA1_7DIGITCODE_2011,
@@ -185,12 +185,12 @@ asgs.sa1 <- asgs.sa1 %>%
            SA4_NAME11 = SA4_NAME_2011)
 
 # Turn all the NAME columns into factors
-name_names <- colnames(asgs.sa1)[grepl('NAME', colnames(asgs.sa1))]
+name_names <- colnames(asgs.sa1.alloc)[grepl('NAME', colnames(asgs.sa1.alloc))]
 name_names <- c(name_names, 'GCC_CODE11')
 for (name in name_names) {
-    asgs.sa1[[name]] <- as.factor(asgs.sa1[[name]])
+    asgs.sa1.alloc[[name]] <- as.factor(asgs.sa1.alloc[[name]])
 }
 
-save(asgs.sa1, file="../data/asgs.sa1.rda", compress='xz')
+save(asgs.sa1.alloc, file="../data/asgs.sa1.alloc.rda", compress='xz')
 
 
