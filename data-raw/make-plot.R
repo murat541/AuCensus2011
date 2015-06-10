@@ -38,7 +38,7 @@ b46 <- AuCensus2011::read_abs("BCP", "B46", this_level) %>% abs_wide_to_long %>%
 #-----------------------------------------------------------------------------
 # Summarise data and add metainfo
 #-----------------------------------------------------------------------------
-cycled <- b46 %>% filter(method=='Bicycle') %>% select(SSC_CODE, Bicycle=count)
+cycled <- b46 %>% filter(method=='Bicycle') %>% select(1, Bicycle=count)
 total  <- b46 %>% filter(method_count %in% c('Total', 'Did_not_go_to_work', 'Worked_at_home')) %>%
     spread(method_count, count)
 
@@ -55,7 +55,6 @@ boundaries <- AuCensus2011::read_asgs_shapefile(level=this_level)
 # Simplify Polygons
 #-----------------------------------------------------------------------------
 # boundaries <- asgs_simplify_boundaries(boundaries)
-
 
 
 
@@ -86,14 +85,17 @@ trim_polygons <- function(boundaries, limits) {
 # boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.00)
 boundaries <- trim_polygons(boundaries, limits=melbourne)
 
-
+if (FALSE) {
+    brisbane_suburbs <- asgs.sa1.alloc %>% filter(GCC_NAME11=='Greater Brisbane') %$% SSC_NAME %>% unique %>% sort
+    boundaries <- boundaries[boundaries$SSC_NAME %in% brisbane_suburbs,]
+}
 
 #-----------------------------------------------------------------------------
 # Merge the boundaries data and the absdata into a data.frame ready for ggplot
 # By doing an inner_join here, we only return the plotting data that
 # is the region at the intersection of boundaries and absdata
 #-----------------------------------------------------------------------------
-create_plotready_data <- function(boundaries, absdata) {
+merge_asgs_abs <- function(boundaries, absdata) {
     # Split the boundaries@data into polygon coords and meta data.
     plot.data    <- boundaries@data
     plot.data$id <- as.numeric(row.names(plot.data))
@@ -108,6 +110,7 @@ create_plotready_data <- function(boundaries, absdata) {
 }
 
 
+
 #-----------------------------------------------------------------------------
 # Basic base::plot
 #-----------------------------------------------------------------------------
@@ -117,7 +120,7 @@ plot(boundaries)  # can I get a fill colour on this?
 # Basic ggplot
 #-----------------------------------------------------------------------------
 # plot.df <- create_plotready_data(boundaries, filter(cycled, label %in% c('Toowong', 'Auchenflower')))
-plot.df <- create_plotready_data(boundaries, cycled)
+plot.df <- merge_asgs_abs(boundaries, cycled)
 
 if (length(unique(plot.df$group)) > 1) {
     m <- ggplot(plot.df) +
