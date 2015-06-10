@@ -55,7 +55,7 @@ create_abs_filename <- function(profile, table, level) {
 #' @examples
 #' read_abs('BCP', 'B46', 'AUS')
 #'
-read_abs <- function(profile, table, level, long=TRUE) {
+read_abs <- function(profile, table, level, long=FALSE) {
     # Find all the files that match the table name + wildcard
     filename.glob <- create_abs_filename(profile, paste0(table, "*"), level)
     filenames <- Sys.glob(filename.glob)
