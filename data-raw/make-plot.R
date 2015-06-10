@@ -31,9 +31,9 @@ darwin    <- list(latmax=-12.32 , lonmin=130.80,latmin=-12.48,lonmax=130.91)
 
 this_level <- 'SSC'
 
-b46 <- AuCensus2011::read_abs("BCP", "B46", this_level, long=TRUE) %>% inner_join(AuCensus2011::split.variables[['B46']]) %>%
+b46 <- AuCensus2011::read_abs("BCP", "B46", this_level) %>% abs_wide_to_long %>%
     filter(gender == 'Persons') %>%
-    select(SSC_CODE, count, method_count, method)
+    select(SSC_CODE, method, method_count, count)
 
 #-----------------------------------------------------------------------------
 # Summarise data and add metainfo

@@ -86,6 +86,5 @@ read_abs <- function(profile, table, level, long=FALSE) {
         colnames(df)[1] <- code_name
     }
 
-
     df
 }
