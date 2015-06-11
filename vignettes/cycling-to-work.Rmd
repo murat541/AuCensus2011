@@ -55,7 +55,7 @@ Filter data and convert to long format with augmented columns
 ```{r}
 b46 %<>% abs_wide_to_long %>%
     filter(gender == 'Persons') %>%
-    select(SSC_CODE, method, method_count, count)
+    select(1, method, method_count, count)
 knitr::kable(head(b46), caption="Table B46 Method of Travel to Work. Filtered, long data with augmented columns")
 ```
 
@@ -77,6 +77,7 @@ Load the ASGS statistical boundaries
 ------------------------------------------------------------------------------
 ```{r}
 boundaries <- AuCensus2011::read_asgs_shapefile(level=this_level)
+# print(pryr::object_size(boundaries))
 # boundaries <- asgs_simplify_boundaries(boundaries)
 knitr::kable(head(boundaries@data), caption="statistical oundaries metadata")
 ```
@@ -213,7 +214,7 @@ leaflet(boundaries) %>%
                 color       = 'black',
                 weight      = 1.5,
                 fillOpacity = 0.8,
-                popup       = leafletboundaries@data$SSC_NAME,
+                popup       = paste(leafletboundaries@data[,2], round(leafletboundaries@data$cycled, 1), "%"),
                 fillColor   = ~pal(leafletboundaries@data$cycled)
     ) %>%
     addLegend(position = "bottomright",
