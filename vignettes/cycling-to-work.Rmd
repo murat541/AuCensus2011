@@ -18,6 +18,7 @@ library(ggplot2)
 library(rgdal) # port install gdal, R CMD INSTALL rgdal_0.9-1.tar.gz
 library(pryr)
 library(rgeos) # gSimplify  - port install geos; R CMD INSTALL rgeos_0.3-8.tar.gz
+library(ggmap)
 
 library(AuCensus2011)
 ```
@@ -99,20 +100,15 @@ knitr::kable(head(asgs.sa1.alloc[1:10, 1:10]), caption="asgs.sa1.alloc allocatio
 
 Plot a subset of all the suburbs in the GCCSA area of 'Greater Brisbane'
 ------------------------------------------------------------------------------
-```{r}
+```{r fig.width=6, fig.height=6}
 # Use allocation table to get all suburbs within GCCSA of Brisbane
 brisbane_suburbs <- asgs.sa1.alloc %>% filter(GCC_NAME11=='Greater Brisbane') %$% SSC_NAME %>% unique %>% sort
 plot(boundaries[boundaries$SSC_NAME %in% brisbane_suburbs,])
 ```
 
 
-```{r}
-
-```
-
-#-----------------------------------------------------------------------------
-# Trim shapefile to bounding box
-#-----------------------------------------------------------------------------
+Trim the boundaries to the bounding box around Melbourne
+------------------------------------------------------------------------------
 ```{r}
 
 # boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.00)
@@ -122,72 +118,71 @@ boundaries <- asgs_select_bbox(boundaries,
 ```
 
 
+Basic ggplot
+------------------------------------------------------------------------------
+```{r fig.width=8, fig.height=6}
+plot.df <- merge_asgs_abs(boundaries, cycled)
+knitr::kable(head(plot.df), caption="plot-ready data set")
 
-```{r}
-# 
-# #-----------------------------------------------------------------------------
-# # Basic ggplot
-# #-----------------------------------------------------------------------------
-# # plot.df <- create_plotready_data(boundaries, filter(cycled, label %in% c('Toowong', 'Auchenflower')))
-# plot.df <- merge_asgs_abs(boundaries, cycled)
-# 
-# if (length(unique(plot.df$group)) > 1) {
-# m <- ggplot(plot.df) +
-# geom_polygon(aes(x=long, y=lat, group=group, fill=cycled)) +
-# coord_fixed()
-# print(m)
-# } else {
-# 
-# m <- ggplot(plot.df) +
-# geom_polygon(aes(x=long, y=lat, group=group), fill='#333333') +
-# coord_fixed()
-# print(m)
-# }
-# 
-# #-----------------------------------------------------------------------------
-# # ggmap plotting
-# #-----------------------------------------------------------------------------
-# library(ggmap)
-# region_bbox <- sp::bbox(boundaries)
-# amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
-# 
-# if (length(unique(plot.df$group)) > 1) {
-# p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group,  fill=cycled  ), alpha=0.9) + coord_fixed()
-# print(p)
-# } else {
-# p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), fill='#333333', alpha=0.9) + coord_fixed()
-# print(p)
-# }
-# 
-# 
-# 
-# #-----------------------------------------------------------------------------
-# # ggmap plotting boundaries only
-# #-----------------------------------------------------------------------------
-# library(ggmap)
-# region_bbox <- sp::bbox(boundaries)
-# amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
-# 
-# p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), colour='black', fill=NA) + coord_fixed()
-# print(p)
-# 
-# 
-# #-----------------------------------------------------------------------------
-# # 'sp' plotting
-# #-----------------------------------------------------------------------------
-# # http://r-video-tutorial.blogspot.ch/2015/05/global-economic-maps.html
-# boundaries@data <- as.data.frame(cycled %<>% mutate(label = as.factor(label)))
-# sp::spplot(boundaries, "cycled")
-# 
-# library(RColorBrewer)
-# sp::spplot(boundaries, "label",
-# col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
-# col = "white"  # colour of boundary lines
-# )
-# 
-# 
+if (length(unique(plot.df$group)) > 1) {
+    m <- ggplot(plot.df) +
+        geom_polygon(aes(x=long, y=lat, group=group, fill=cycled)) +
+        coord_fixed()
+    print(m)
+} else {
+    
+    m <- ggplot(plot.df) +
+        geom_polygon(aes(x=long, y=lat, group=group), fill='#333333') +
+        coord_fixed()
+    print(m)
+}
+```
+
+ggmap plotting
+------------------------------------------------------------------------------
+```{r message=FALSE, fig.width=8, fig.height=6}
+# Find the bounding box around what's left of the boundary
+region_bbox <- sp::bbox(boundaries)
+# ask ggmap to get the map data within this boundary
+amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
+
+if (length(unique(plot.df$group)) > 1) {
+    p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group,  fill=cycled  ), alpha=0.9) + coord_fixed()
+    print(p)
+} else {
+    p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), fill='#333333', alpha=0.9) + coord_fixed()
+    print(p)
+}
+
+```
 
 
+ggmap plotting (boundaries only)
+------------------------------------------------------------------------------
+```{r message=FALSE, warning=FALSE, fig.width=8, fig.height=6}
+region_bbox <- sp::bbox(boundaries)
+amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
+
+p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), colour='red', fill=NA) + coord_fixed()
+print(p)
+```
+
+
+sp plotting
+------------------------------------------------------------------------------
+```{r fig.width=8, fig.height=6}
+# http://r-video-tutorial.blogspot.ch/2015/05/global-economic-maps.html
+sp::spplot(boundaries, "SQKM")
+```
+
+sp plotting by label
+------------------------------------------------------------------------------
+```{r fig.width=8, fig.height=6}
+library(RColorBrewer)
+sp::spplot(boundaries, "CONF_VALUE",
+           col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
+           col = "white"  # colour of boundary lines
+)
 ```
 
 
