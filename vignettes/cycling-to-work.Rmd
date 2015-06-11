@@ -19,6 +19,7 @@ library(rgdal) # port install gdal, R CMD INSTALL rgdal_0.9-1.tar.gz
 library(pryr)
 library(rgeos) # gSimplify  - port install geos; R CMD INSTALL rgeos_0.3-8.tar.gz
 library(ggmap)
+library(leaflet)
 
 library(AuCensus2011)
 ```
@@ -98,12 +99,12 @@ knitr::kable(head(asgs.sa1.alloc[1:10, 1:10]), caption="asgs.sa1.alloc allocatio
 ```
 
 
-Plot a subset of all the suburbs in the GCCSA area of 'Greater Brisbane'
+Plot a subset of all the suburbs in the GCCSA area of 'Greater Melbourne'
 ------------------------------------------------------------------------------
 ```{r fig.width=6, fig.height=6}
-# Use allocation table to get all suburbs within GCCSA of Brisbane
-brisbane_suburbs <- asgs.sa1.alloc %>% filter(GCC_NAME11=='Greater Brisbane') %$% SSC_NAME %>% unique %>% sort
-plot(boundaries[boundaries$SSC_NAME %in% brisbane_suburbs,])
+# Use allocation table to get all suburbs within GCCSA of Melbourne
+melbourne_suburbs <- asgs.sa1.alloc %>% filter(GCC_NAME11=='Greater Melbourne') %$% SSC_NAME %>% unique %>% sort
+plot(boundaries[boundaries$SSC_NAME %in% melbourne_suburbs,])
 ```
 
 
@@ -111,10 +112,18 @@ Trim the boundaries to the bounding box around Melbourne
 ------------------------------------------------------------------------------
 ```{r}
 
-# boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.00)
-boundaries <- asgs_select_bbox(boundaries, 
-                               melbourne$min_long, melbourne$min_lat,
-                               melbourne$max_long, melbourne$max_lat)
+if (FALSE) {
+    # Subset plotting region by bounding box
+    boundaries <- asgs_select_bbox(boundaries, 
+                                   melbourne$min_long, melbourne$min_lat,
+                                   melbourne$max_long, melbourne$max_lat)
+} else {
+    # Subset plotting region, but choosing suburbs somehow.
+    # Here, use asgs.sa1.alloc to find all the suburbs in Melbourne
+    melbourne_suburbs <- asgs.sa1.alloc %>% filter(GCC_NAME11=='Greater Melbourne') %$% SSC_NAME %>% unique %>% sort
+    boundaries <- boundaries[boundaries$SSC_NAME %in% melbourne_suburbs,]
+}
+
 ```
 
 
@@ -183,6 +192,36 @@ sp::spplot(boundaries, "CONF_VALUE",
            col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
            col = "white"  # colour of boundary lines
 )
+```
+
+leaflet plot
+------------------------------------------------------------------------------
+
+```{r fig.width=8, fig.height=6}
+leafletboundaries      <- boundaries
+leafletboundaries@data <- boundaries@data %>% left_join(cycled)
+
+# Colour Brewer names:
+# Sequential: Blues BuGn BuPu GnBu Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples RdPu Reds
+#             YlGn YlGnBu YlOrBr YlOrRd
+# Diverging: BrBG PiYG PRGn PuOr RdBu RdGy RdYlBu RdYlGn Spectral
+pal <- colorNumeric("Blues", leafletboundaries@data$cycled)
+
+leaflet(boundaries) %>% 
+    addTiles %>% 
+    addPolygons(stroke=TRUE,
+                color       = 'black',
+                weight      = 1.5,
+                fillOpacity = 0.8,
+                popup       = leafletboundaries@data$SSC_NAME,
+                fillColor   = ~pal(leafletboundaries@data$cycled)
+    ) %>%
+    addLegend(position = "bottomright",
+              pal      = pal,
+              values   = seq(0, 20, 2.5),
+              opacity  = 1,
+              title    = "% of commuters who went by bike<br>2011 Census. ABS data")
+
 ```
 
 
