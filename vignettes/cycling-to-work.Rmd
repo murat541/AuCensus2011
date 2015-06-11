@@ -1,0 +1,193 @@
+---
+title: "Australian Census 2011 - Cycling to work"
+author: "coolbutuseless"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+    %\VignetteIndexEntry{Vignette Title}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+```{r message=FALSE}
+library(knitr)
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(rgdal) # port install gdal, R CMD INSTALL rgdal_0.9-1.tar.gz
+library(pryr)
+library(rgeos) # gSimplify  - port install geos; R CMD INSTALL rgeos_0.3-8.tar.gz
+
+library(AuCensus2011)
+```
+
+
+```{r}
+#-----------------------------------------------------------------------------
+# The extents of the captial cities was chosen arbitrarily
+#-----------------------------------------------------------------------------
+#                 TOP             LEFT          BOTTOM        RIGHT
+australia <- list(max_lat=-10    , min_long=112  , min_lat=-45  , max_long=155)
+brisbane  <- list(max_lat=-27.4  , min_long=152.9, min_lat=-27.7, max_long=153.2)
+sydney    <- list(max_lat=-33.75 , min_long=151.1, min_lat=-34.0, max_long=151.3)
+melbourne <- list(max_lat=-37.7  , min_long=144.7, min_lat=-37.9, max_long=145.1)
+adelaide  <- list(max_lat=-34.76 , min_long=138.45,min_lat=-35.0, max_long=138.75)
+perth     <- list(max_lat=-31.7  , min_long=115.7 ,min_lat=-32.5, max_long=116.13)
+canberra  <- list(max_lat=-35.19 , min_long=149.0 ,min_lat=-35.34,max_long=149.2)
+hobart    <- list(max_lat=-42.82 , min_long=147.26,min_lat=-42.9 ,max_long=147.38)
+darwin    <- list(max_lat=-12.32 , min_long=130.80,min_lat=-12.48,max_long=130.91)
+```
+
+
+Choose a statistical level and load the data
+------------------------------------------------------------------------------
+
+```{r}
+this_level <- 'SSC'
+b46 <- AuCensus2011::read_abs("BCP", "B46", this_level)
+knitr::kable(b46[1:10, 1:5], caption="Table B46 Method of Travel to Work (raw census data)")
+```
+
+Filter data and convert to long format with augmented columns
+```{r}
+b46 %<>% abs_wide_to_long %>%
+    filter(gender == 'Persons') %>%
+    select(SSC_CODE, method, method_count, count)
+knitr::kable(head(b46), caption="Table B46 Method of Travel to Work. Filtered, long data with augmented columns")
+```
+
+
+Summarise the cycling data and work out the rate (% working population who travelled to work)
+------------------------------------------------------------------------------
+```{r}
+cycled <- b46 %>% filter(method=='Bicycle') %>% select(1, Bicycle=count)
+total  <- b46 %>% filter(method_count %in% c('Total', 'Did_not_go_to_work', 'Worked_at_home')) %>%
+    spread(method_count, count)
+
+cycled %<>% inner_join(total) %>% mutate(cycled = 100 * Bicycle / (Total - Did_not_go_to_work - Worked_at_home))
+
+knitr::kable(head(cycled), caption="Calculated cycling rate by suburb")
+```
+
+
+Load the ASGS statistical boundaries
+------------------------------------------------------------------------------
+```{r}
+boundaries <- AuCensus2011::read_asgs_shapefile(level=this_level)
+# boundaries <- asgs_simplify_boundaries(boundaries)
+knitr::kable(head(boundaries@data), caption="statistical oundaries metadata")
+```
+
+
+ASGS allocation (statistical area hierarchy)
+------------------------------------------------------------------------------
+The `asgs.sa1.alloc` data.frame contains the allocations (correspondences) between the different statistical areas.
+
+This can be used to filter and select regions. e.g.
+
+* All suburbs in the GCCSA of 'Great Brisbane'
+* All 'SA2' areas within a particular 'SA3' area.
+* Find which suburbs are covered by a particular postcode.
+
+TODO: `asgs.sa1.alloc` and `asgs.mb.alloc` should probably be another vigneete.
+
+```{r}
+knitr::kable(head(asgs.sa1.alloc[1:10, 1:10]), caption="asgs.sa1.alloc allocation (correspondence) table")
+```
+
+
+Plot a subset of all the suburbs in the GCCSA area of 'Greater Brisbane'
+------------------------------------------------------------------------------
+```{r}
+# Use allocation table to get all suburbs within GCCSA of Brisbane
+brisbane_suburbs <- asgs.sa1.alloc %>% filter(GCC_NAME11=='Greater Brisbane') %$% SSC_NAME %>% unique %>% sort
+plot(boundaries[boundaries$SSC_NAME %in% brisbane_suburbs,])
+```
+
+
+```{r}
+
+```
+
+#-----------------------------------------------------------------------------
+# Trim shapefile to bounding box
+#-----------------------------------------------------------------------------
+```{r}
+
+# boundaries <- simplify_polygons(boundaries, simplification_tolerance = 0.00)
+boundaries <- asgs_select_bbox(boundaries, 
+                               melbourne$min_long, melbourne$min_lat,
+                               melbourne$max_long, melbourne$max_lat)
+```
+
+
+
+```{r}
+# 
+# #-----------------------------------------------------------------------------
+# # Basic ggplot
+# #-----------------------------------------------------------------------------
+# # plot.df <- create_plotready_data(boundaries, filter(cycled, label %in% c('Toowong', 'Auchenflower')))
+# plot.df <- merge_asgs_abs(boundaries, cycled)
+# 
+# if (length(unique(plot.df$group)) > 1) {
+# m <- ggplot(plot.df) +
+# geom_polygon(aes(x=long, y=lat, group=group, fill=cycled)) +
+# coord_fixed()
+# print(m)
+# } else {
+# 
+# m <- ggplot(plot.df) +
+# geom_polygon(aes(x=long, y=lat, group=group), fill='#333333') +
+# coord_fixed()
+# print(m)
+# }
+# 
+# #-----------------------------------------------------------------------------
+# # ggmap plotting
+# #-----------------------------------------------------------------------------
+# library(ggmap)
+# region_bbox <- sp::bbox(boundaries)
+# amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
+# 
+# if (length(unique(plot.df$group)) > 1) {
+# p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group,  fill=cycled  ), alpha=0.9) + coord_fixed()
+# print(p)
+# } else {
+# p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), fill='#333333', alpha=0.9) + coord_fixed()
+# print(p)
+# }
+# 
+# 
+# 
+# #-----------------------------------------------------------------------------
+# # ggmap plotting boundaries only
+# #-----------------------------------------------------------------------------
+# library(ggmap)
+# region_bbox <- sp::bbox(boundaries)
+# amap <- ggmap::get_map(location = region_bbox, source = "stamen", maptype = "toner", crop = T)
+# 
+# p <- ggmap(amap) + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group), colour='black', fill=NA) + coord_fixed()
+# print(p)
+# 
+# 
+# #-----------------------------------------------------------------------------
+# # 'sp' plotting
+# #-----------------------------------------------------------------------------
+# # http://r-video-tutorial.blogspot.ch/2015/05/global-economic-maps.html
+# boundaries@data <- as.data.frame(cycled %<>% mutate(label = as.factor(label)))
+# sp::spplot(boundaries, "cycled")
+# 
+# library(RColorBrewer)
+# sp::spplot(boundaries, "label",
+# col.regions = colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(8),
+# col = "white"  # colour of boundary lines
+# )
+# 
+# 
+
+
+```
+
+

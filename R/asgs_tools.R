@@ -186,3 +186,63 @@ asgs_simplify_boundaries <- function(boundaries, simplification_tolerance = 0.01
     invisible(simpler.boundaries)
 }
 
+#' Select only the geometry within the given bounding box
+#'
+#' Select only the geometry within the given bounding box
+#'
+#' Select only the geometry within the given bounding box
+#'
+#' @export
+#' @param boundaries ASGS shapefile (SpatialPolygonsDataFrame)
+#' @param min_long min longitude
+#' @param min_lat min latitude
+#' @param max_long max longitude
+#' @param max_lat max latitude
+#' @return SpatialPolygonsDataFrame of bounded region
+#'
+asgs_select_bbox <- function(boundaries, min_long, min_lat, max_long, max_lat) {
+    cat("asgs_select_bbox: Before:", as.numeric(pryr::object_size(boundaries)) / 1e6, "MB\n")
+
+    # Create a sp SpatialPolygons object to represent the bounding area we are interested in.
+    #     r1           <- cbind(c(limits$min_long, limits$max_long, limits$max_long, limits$min_long, limits$min_long),
+    #                           c(limits$max_lat, limits$max_lat, limits$min_lat, limits$min_lat, limits$max_lat))
+    r1 <- cbind(c(min_long, max_long, max_long, min_long, min_long),
+                c(max_lat , max_lat , min_lat , min_lat , max_lat))
+    sr1          <- sp::Polygons(list(sp::Polygon(r1, hole=FALSE)), "r1")
+    bbox_polygon <- sp::SpatialPolygons(list(sr1), proj4string = sp::CRS(sp::proj4string(boundaries)))
+
+    # Get the list of IDs of objects which lie within the bounding box
+    isection_ids <- rgeos::gIntersects(bbox_polygon, boundaries, byid=TRUE)
+
+    # Keep only the geometry which lies within the bounding box
+    boundaries <- boundaries[which(isection_ids),]
+
+    cat("asgs_select_bbox: After :", as.numeric(pryr::object_size(boundaries)) / 1e6, "MB\n")
+    boundaries
+}
+
+#'
+#' Merge the boundaries data and the absdata into a data.frame ready for ggplot
+#'
+# Merge the boundaries data and the absdata into a data.frame ready for ggplot
+#'
+#' Merge the boundaries data and the absdata into a data.frame ready for ggplot
+#' By doing an inner_join here, we only return the plotting data that is the
+#' region at the intersection of boundaries and absdata
+#' @export
+#' @param boundaries ASGS shapefile (SpatialPolygonsDataFrame)
+#' @param absdata data.frame of ABS data in long format
+#' @return data.frame ready for ggplot2 plotting
+merge_asgs_abs <- function(boundaries, absdata) {
+    # Split the boundaries@data into polygon coords and meta data.
+    plot.data    <- boundaries@data
+    plot.data$id <- as.numeric(row.names(plot.data))
+
+    plot.coords    <- ggplot2::fortify(boundaries)
+    plot.coords$id <- as.numeric(plot.coords$id)
+
+    plot.data <- dplyr::inner_join(plot.data, absdata)
+
+    # Create a suitable data.frame for plotting with ggplot with coords + metainfo
+    plot.df <- dplyr::inner_join(plot.data, plot.coords)
+}

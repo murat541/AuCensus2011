@@ -22,4 +22,7 @@ Imports:
     rgeos,
     pryr,
     stringr
-
+Suggests:
+    knitr,
+    ggplot2
+VignetteBuilder: knitr
