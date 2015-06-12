@@ -2,8 +2,7 @@
 title: "Australian Census 2011 - Cycling to work"
 author: "coolbutuseless"
 date: "`r Sys.Date()`"
-output: 
-html_document
+output: html_document
 ---
 
 ```{r message=FALSE}
@@ -107,50 +106,69 @@ Multi hexes
 ```{r fig.width=8, fig.height=6}
 library(foreach)
 
-x0   <- 152.95
-w  <-   0.02
 
-y0   <- -27.4
-h <-  -sqrt(3)/2 * w
-
-polys <- NULL
-polys <- foreach(offset=list(c(0, 0), c(0.75*w, 0.5*h)), .combine=c) %do% {
-    foreach(ii=0:4, .combine=c) %do% {
-        x <- offset[1] + x0 + ii*(1.5*w)
-        foreach(jj=0:5, .combine=c) %do% {
-            y <- offset[2] + y0 + jj*h
-            
-            # Make a single hex at the given starting location
-            r1 <- cbind(c(x+0.25*w, x+0.75*w, x+w    , x+0.75*w, x+0.25*w, x      ), 
-                        c(y       , y       , y+0.5*h, y+h     , y+h     , y+0.5*h))
-            
-            # Last point must be same as first point to make it a closed polygon.
-            r1 <- rbind(r1, r1[1,])
-            
-            # make it into an sp polygon
-            sr1 <- sp::Polygon(r1, hole=FALSE)
-            sr1
+create_hex_grid <- function(min_long, min_lat, max_long, max_lat, N, crs) {
+    x0 <- min(min_long, max_long)
+    w  <-  abs(min_long-max_long) / (N/1.3)
+    Nx <- N/2
+    
+    y0 <- max(min_lat, max_lat)
+    h  <-  -sqrt(3)/2 * w
+    Ny <- as.integer(abs((min_long - max_long) / h) / 1.5)
+    
+    id = 1
+    polys <- NULL
+    polys <- foreach(offset=list(c(0, 0), c(0.75*w, 0.5*h)), .combine=c) %do% {
+        foreach(ii=0:Nx, .combine=c) %do% {
+            x <- offset[1] + x0 + ii*(1.5*w)
+            foreach(jj=0:Ny, .combine=c) %do% {
+                y <- offset[2] + y0 + jj*h
+                
+                # Make a single hex at the given starting location
+                r1 <- cbind(c(x+0.25*w, x+0.75*w, x+w    , x+0.75*w, x+0.25*w, x      ), 
+                            c(y       , y       , y+0.5*h, y+h     , y+h     , y+0.5*h))
+                
+                # Last point must be same as first point to make it a closed polygon.
+                r1 <- rbind(r1, r1[1,])
+                
+                # make it into an sp polygon
+                sr1 <- sp::Polygons(list(sp::Polygon(r1, hole=FALSE)), id)
+                id <- id + 1
+                
+                sr1
+            }
         }
     }
+    
+    sr1 <- sp::SpatialPolygons(polys, proj4string = sp::CRS(sp::proj4string(boundaries)))
+    
+    hexgrid <- sp::SpatialPolygonsDataFrame(sr1, data=data.frame(x=1:length(sr1), row.names = names(sr1)))
+    hexgrid    
 }
 
-polys <- sp::Polygons(polys, "r1")
+min_long   <- 152.95
+max_long   <- 153.09
+min_lat    <- -27.4
+max_lat    <- -27.51
 
-# Give it a coord system
-bbox_polygon <- sp::SpatialPolygons(list(polys), proj4string = sp::CRS(sp::proj4string(boundaries)))
+hexgrid <- create_hex_grid(min_long, min_lat, max_long, max_lat, N=10,
+                           crs=sp::CRS(sp::proj4string(boundaries)))
 
-bbox.df <- fortify(bbox_polygon)
-
+hexgrid.df <- fortify(hexgrid)
 
 m <- ggplot() + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group, fill=id)) + 
-    geom_polygon(data=bbox.df, aes(x=long, y=lat, group=group), fill='black', colour='white', alpha=0.4) +
-    coord_fixed() + theme(legend.position='None')
+    geom_polygon(data=hexgrid.df, aes(x=long, y=lat, group=group), colour='white', alpha=0.4) +
+    coord_fixed() + theme(legend.position='None') + labs(title="Brisbane Hex 1")
 print(m)
 ```
 
 
 
 
+```{r}
+hexoverlap <- rgeos::gIntersects(boundaries, hexgrid, byid=TRUE)
+hexoverlap
+```
 
 
 
