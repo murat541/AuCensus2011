@@ -5,6 +5,8 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+Hex info: http://www.redblobgames.com/grids/hexagons/
+
 ```{r message=FALSE}
 library(knitr)
 library(magrittr)
@@ -106,6 +108,11 @@ Multi hexes
 ```{r fig.width=8, fig.height=6}
 library(foreach)
 
+calc_hex_width_height <- function(min_long, min_lat, max_long, max_lat, N) {
+    w  <-  abs(min_long-max_long) / (N/1.3)
+    h  <-  -sqrt(3)/2 * w
+    list(w=w, h=h)
+}
 
 create_hex_grid <- function(min_long, min_lat, max_long, max_lat, N, crs) {
     x0 <- min(min_long, max_long)
@@ -166,8 +173,59 @@ print(m)
 
 
 ```{r}
-hexoverlap <- rgeos::gIntersects(boundaries, hexgrid, byid=TRUE)
-hexoverlap
+library(foreach)
+
+min_long   <- 152.95
+max_long   <- 153.09
+min_lat    <- -27.4
+max_lat    <- -27.51
+
+scores <- NULL
+scores <- foreach(N=seq(50, 5), .combine=rbind) %do% {
+    hex <- calc_hex_width_height(min_long, min_lat, max_long, max_lat, N)
+    print(hex)
+    
+    gridN <- 10
+    offset_long <- seq(0, hex$w, hex$w/gridN)
+    offset_lat  <- seq(0, hex$h, hex$h/gridN)
+    
+    start <- Sys.time()
+    scores <- foreach(ii=1:length(offset_long), .combine=rbind) %do% {
+        foreach(jj=1:length(offset_lat), .combine=rbind) %do% {
+            hexgrid <- create_hex_grid(min_long + offset_long[ii],
+                                       min_lat  + offset_lat[jj],
+                                       max_long + offset_long[ii],
+                                       max_lat  + offset_lat[jj], N=N,
+                                       crs=sp::CRS(sp::proj4string(boundaries)))
+            
+            hexgrid.df <- fortify(hexgrid)
+            m <- ggplot() + geom_polygon(data=plot.df, aes(x=long, y=lat, group=group, fill=id)) + 
+                geom_polygon(data=hexgrid.df, aes(x=long, y=lat, group=group),
+                             fill='darkgrey', colour='black', size=0.2, alpha=0) +
+                coord_fixed(xlim=c(min_long, max_long), ylim=c(min_lat, max_lat)) +
+                theme(legend.position='None') + labs(title=sprintf("hex/%02i_%02i_%02i", N, ii, jj))
+                
+            
+            plotname <- sprintf("hex/%02i_%02i_%02i.png", N, ii, jj)
+            ggsave(m, filename=plotname, width=6, height=6)
+            
+            hexoverlap <- rgeos::gIntersects(boundaries, hexgrid, byid=TRUE)
+            
+            # How many suburbs does each hex overlap?
+            score <- apply(hexoverlap, 1, FUN=sum)
+            score <- score[score!=0]
+            
+            data.frame(N=N, ii=ii, jj=jj, max=max(score), mean=mean(score))
+        }
+    }
+    print(Sys.time() - start)
+    scores
+}
+
+
+ggplot(scores, aes(x=ii, y=jj, colour=as.factor(max))) + geom_point(size=10) + facet_wrap(~N)
+
+
 ```
 
 
