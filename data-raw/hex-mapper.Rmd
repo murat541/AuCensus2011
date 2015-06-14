@@ -180,8 +180,9 @@ max_long   <- 153.09
 min_lat    <- -27.4
 max_lat    <- -27.51
 
+start <- Sys.time()
 scores <- NULL
-scores <- foreach(N=seq(50, 5), .combine=rbind) %do% {
+scores <- foreach(N=seq(55, 75, 5), .combine=rbind) %do% {
     hex <- calc_hex_width_height(min_long, min_lat, max_long, max_lat, N)
     print(hex)
     
@@ -189,7 +190,6 @@ scores <- foreach(N=seq(50, 5), .combine=rbind) %do% {
     offset_long <- seq(0, hex$w, hex$w/gridN)
     offset_lat  <- seq(0, hex$h, hex$h/gridN)
     
-    start <- Sys.time()
     scores <- foreach(ii=1:length(offset_long), .combine=rbind) %do% {
         foreach(jj=1:length(offset_lat), .combine=rbind) %do% {
             hexgrid <- create_hex_grid(min_long + offset_long[ii],
@@ -204,7 +204,7 @@ scores <- foreach(N=seq(50, 5), .combine=rbind) %do% {
                              fill='darkgrey', colour='black', size=0.2, alpha=0) +
                 coord_fixed(xlim=c(min_long, max_long), ylim=c(min_lat, max_lat)) +
                 theme(legend.position='None') + labs(title=sprintf("hex/%02i_%02i_%02i", N, ii, jj))
-                
+            
             
             plotname <- sprintf("hex/%02i_%02i_%02i.png", N, ii, jj)
             ggsave(m, filename=plotname, width=6, height=6)
@@ -218,12 +218,12 @@ scores <- foreach(N=seq(50, 5), .combine=rbind) %do% {
             data.frame(N=N, ii=ii, jj=jj, max=max(score), mean=mean(score))
         }
     }
-    print(Sys.time() - start)
     scores
 }
+print(Sys.time() - start)
 
 
-ggplot(scores, aes(x=ii, y=jj, colour=as.factor(max))) + geom_point(size=10) + facet_wrap(~N)
+ggplot(scores, aes(x=ii, y=jj, colour=mean)) + geom_point(size=6) + facet_wrap(~N)
 
 
 ```
